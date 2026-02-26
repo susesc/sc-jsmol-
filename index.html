@@ -2,227 +2,3108 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>JSmol 分子点群 + H₂O σᵥ</title>
-
+<title>分子点群与对称操作交互演示（带视角保持）</title>
 <script src="jsmol/JSmol.min.js"></script>
-
 <style>
 body {
-  font-family: Arial, Helvetica, sans-serif;
-  background: #f6f7f9;
-  text-align: center;
+  margin: 0;
+  font-family: "Inter","Segoe UI",Arial,Helvetica,sans-serif;
+  background: #f3f4f6;
+  color: #374151;
+  overflow: hidden;
 }
-
-.panel {
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 10px;
-  margin: 10px auto;
-  width: 90%;
-  max-width: 900px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+.header {
+  background: linear-gradient(90deg,#991b1b,#b91c1c);
+  color: white;
+  padding: 14px 22px;
+  font-size: 20px;
+  font-weight: 600;
+  height: 60px;
+  box-sizing: border-box;
 }
-
-button {
-  margin: 4px;
-  padding: 6px 14px;
-  font-size: 14px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  cursor: pointer;
-  background: #fdfdfd;
+.main {
+  display: flex;
+  height: calc(100vh - 60px);
+  box-sizing: border-box;
+  gap: 14px;
+  padding: 14px;
 }
-
-button:hover {
-  background: #e9eef5;
+.viewer-panel {
+  flex: 1;
+  background: white;
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
-
 #viewer {
-  width: 420px;
-  height: 420px;
-  margin: 15px auto;
-  border: 1px solid #bbb;
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
   background: white;
 }
+.pg-info {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: linear-gradient(180deg,#fafafa,#f3f4f6);
+  border: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+.pg-title {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 6px;
+  color: #111827;
+}
+.pg-text {
+  font-size: 13px;
+  line-height: 1.65;
+  color: #4b5563;
+}
+.control-panel {
+  width: 380px;
+  background: white;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+.section {
+  margin-bottom: 18px;
+}
+.section-title {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 8px;
+  border-left: 4px solid #b91c1c;
+  padding-left: 8px;
+}
+button {
+  margin: 4px;
+  padding: 7px 16px;
+  font-size: 14px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: linear-gradient(180deg,#fff,#f3f4f6);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+button:hover {
+  background: linear-gradient(180deg,#fee2e2,#fecaca);
+  border-color: #ef4444;
+  color: #7f1d1d;
+  transform: translateY(-1px);
+}
+button.active {
+  background: #fee2e2;
+  border-color: #ef4444;
+  color: #991b1b;
+}
+button.pg-btn {
+  background: linear-gradient(180deg,#f0f9ff,#e0f2fe);
+  border-color: #38bdf8;
+  color: #0369a1;
+}
+button.pg-btn:hover {
+  background: linear-gradient(180deg,#e0f2fe,#bae6fd);
+  border-color: #0ea5e9;
+  color: #075985;
+}
+button.pg-btn.active {
+  background: linear-gradient(180deg,#bae6fd,#7dd3fc);
+  border-color: #0ea5e9;
+  color: #0c4a6e;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+.hidden { display: none; }
+.note {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+.status-indicator {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  font-size: 12px;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.status-indicator::before {
+  content: "ℹ️";
+}
+.loading {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #1e40af;
+}
+.loading::before {
+  content: "⏳";
+}
+.special-btn {
+  background: linear-gradient(180deg,#fef3c7,#fde68a);
+  border-color: #f59e0b;
+  color: #92400e;
+}
+.special-btn:hover {
+  background: linear-gradient(180deg,#fde68a,#fcd34d);
+  border-color: #f59e0b;
+  color: #92400e;
+}
+.identity-btn {
+  background: linear-gradient(180deg,#d1fae5,#a7f3d0);
+  border-color: #10b981;
+  color: #065f46;
+}
+.identity-btn:hover {
+  background: linear-gradient(180deg,#a7f3d0,#6ee7b7);
+  border-color: #10b981;
+  color: #065f46;
+}
+.inversion-btn {
+  background: linear-gradient(180deg,#e0e7ff,#c7d2fe);
+  border-color: #6366f1;
+  color: #3730a3;
+}
+.inversion-btn:hover {
+  background: linear-gradient(180deg,#c7d2fe,#a5b4fc);
+  border-color: #6366f1;
+  color: #3730a3;
+}
+.chcl3-btn {
+  background: linear-gradient(180deg,#f3e8ff,#e9d5ff);
+  border-color: #a855f7;
+  color: #6b21a8;
+}
+.chcl3-btn:hover {
+  background: linear-gradient(180deg,#e9d5ff,#d8b4fe);
+  border-color: #a855f7;
+  color: #6b21a8;
+}
+.ethylene-c2-btn {
+  background: linear-gradient(180deg,#dcfce7,#bbf7d0);
+  border-color: #22c55e;
+  color: #166534;
+}
+.ethylene-c2-btn:hover {
+  background: linear-gradient(180deg,#bbf7d0,#86efac);
+  border-color: #16a34a;
+  color: #14532d;
+}
+.ethylene-sigma-btn {
+  background: linear-gradient(180deg,#fce7f3,#fbcfe8);
+  border-color: #ec4899;
+  color: #831843;
+}
+.ethylene-sigma-btn:hover {
+  background: linear-gradient(180deg,#fbcfe8,#f9a8d4);
+  border-color: #db2777;
+  color: #be185d;
+}
+/* S6 operation button style */
+.s6-btn {
+  background: linear-gradient(180deg,#fdf2f8,#fce7f3);
+  border-color: #d946ef;
+  color: #701a75;
+}
+.s6-btn:hover {
+  background: linear-gradient(180deg,#fce7f3,#f5d0fe);
+  border-color: #c026d3;
+  color: #4a044e;
+}
+.s6-step-btn {
+  background: linear-gradient(180deg,#fff7ed,#ffedd5);
+  border-color: #f97316;
+  color: #7c2d12;
+}
+.s6-step-btn:hover {
+  background: linear-gradient(180deg,#ffedd5,#fed7aa);
+  border-color: #ea580c;
+  color: #431407;
+}
+/* CH3-CCl3 σh buttons */
+.ch3ccl3-sh-btn {
+  background: linear-gradient(180deg,#f0fdf4,#dcfce7);
+  border-color: #22c55e;
+  color: #14532d;
+}
+.ch3ccl3-sh-btn:hover {
+  background: linear-gradient(180deg,#dcfce7,#bbf7d0);
+  border-color: #16a34a;
+  color: #14532d;
+}
+.ch3ccl3-sh-btn.active {
+  background: linear-gradient(180deg,#bbf7d0,#86efac);
+  border-color: #15803d;
+  color: #14532d;
+}
+/* benzene σ button styles */
+.benz-sigmav-btn {
+  background: linear-gradient(180deg,#fff7ed,#ffedd5);
+  border-color: #f97316; color: #7c2d12;
+}
+.benz-sigmav-btn:hover { background: linear-gradient(180deg,#ffedd5,#fed7aa); border-color: #ea580c; color: #431407; }
+.benz-sigmav-btn:disabled { opacity:.5; cursor:not-allowed; }
+.benz-sigmad-btn {
+  background: linear-gradient(180deg,#ecfeff,#cffafe);
+  border-color: #0891b2; color: #0c4a6e;
+}
+.benz-sigmad-btn:hover { background: linear-gradient(180deg,#cffafe,#a5f3fc); border-color: #0e7490; color: #083344; }
+.benz-sigmad-btn:disabled { opacity:.5; cursor:not-allowed; }
+.benz-inv-btn {
+  background: linear-gradient(180deg,#fdf4ff,#f3e8ff);
+  border-color: #a855f7; color: #6b21a8;
+}
+.benz-inv-btn:hover { background: linear-gradient(180deg,#f3e8ff,#e9d5ff); border-color: #9333ea; color: #581c87; }
+.benz-inv-btn:disabled { opacity:.5; cursor:not-allowed; }
+/* σd button style - teal/cyan theme */
+.sigmad-btn {
+  background: linear-gradient(180deg,#ecfeff,#cffafe);
+  border-color: #06b6d4;
+  color: #164e63;
+}
+.sigmad-btn:hover {
+  background: linear-gradient(180deg,#cffafe,#a5f3fc);
+  border-color: #0891b2;
+  color: #0c4a6e;
+}
+.sigmad-btn.active {
+  background: linear-gradient(180deg,#a5f3fc,#67e8f9);
+  border-color: #0891b2;
+  color: #164e63;
+}
+.molecule-buttons-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
 
-.hidden {
+/* 恒等操作提示遮罩 */
+.identity-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
   display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.identity-overlay.show {
+  display: flex;
+}
+.identity-dialog {
+  background: white;
+  padding: 24px 28px;
+  border-radius: 16px;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+  max-width: 520px;
+  width: 90%;
+  text-align: center;
+  border: 1px solid #e5e7eb;
+}
+.identity-dialog-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #b91c1c;
+  margin-bottom: 8px;
+}
+.identity-dialog-body {
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+.identity-dialog-body p {
+  margin: 0 0 8px 0;
+}
+.identity-dialog-body p:last-child {
+  margin-bottom: 0;
+}
+.identity-dialog-body strong {
+  color: #ef4444;
+}
+.identity-confirm-btn {
+  margin-top: 4px;
+  padding: 8px 20px;
+  font-size: 14px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(180deg,#fee2e2,#fecaca);
+  color: #7f1d1d;
+  cursor: pointer;
+  font-weight: 600;
+}
+.identity-confirm-btn:hover {
+  background: linear-gradient(180deg,#fecaca,#fca5a5);
 }
 </style>
 </head>
-
 <body>
+<div class="header">
+  分子点群与对称操作交互演示（所有动画均支持视角保持）
+</div>
+<div class="main">
+  <div class="viewer-panel">
+    <div id="viewer"></div>
+    <div id="pgInfo" class="pg-info">
+      <div class="pg-title">点群说明</div>
+      <div class="pg-text">
+        请选择一个分子以查看其点群与对称元素说明。
+      </div>
+    </div>
+  </div>
 
-<h2>分子点群 Cₙ 操作演示（含 H₂O σᵥ）</h2>
+  <div class="control-panel">
+    <div class="section">
+      <div class="section-title">选择点群类型</div>
+      <button class="pg-btn active" onclick="selectPointGroup('all')">全部分子</button>
+      <button class="pg-btn" onclick="selectPointGroup('C2v')">C₂ᵥ 点群</button>
+      <button class="pg-btn" onclick="selectPointGroup('C3v')">C₃ᵥ 点群</button>
+      <button class="pg-btn" onclick="selectPointGroup('C2')">C₂ 点群</button>
+      <button class="pg-btn" onclick="selectPointGroup('C2h')">C₂ʰ 点群</button>
+      <button class="pg-btn" onclick="selectPointGroup('D∞h')">D∞ʰ 点群</button>
+      <button class="pg-btn" onclick="selectPointGroup('D3h')">D₃ʰ 点群</button>
+      <button class="pg-btn" onclick="selectPointGroup('D6h')">D₆ʰ 点群</button>
+      <button class="pg-btn" onclick="selectPointGroup('D2h')">D₂ʰ 点群</button>
+      <button class="pg-btn" onclick="selectPointGroup('D4h')">D₄ʰ 点群</button>
+      <button class="pg-btn" onclick="selectPointGroup('D3d')">D₃d 点群</button>
+      <button class="pg-btn" onclick="selectPointGroup('D5d')">D₅d 点群</button>
+      <div class="status-indicator" id="pg-status">当前显示: 全部分子</div>
+    </div>
 
-<!-- ================= 分子选择 ================= -->
-<div class="panel">
-<strong>选择分子</strong><br>
+    <div class="section">
+      <div class="section-title">选择分子</div>
+      <div id="molecule-buttons-container" class="molecule-buttons-container">
+      </div>
+      <div class="status-indicator" id="mol-status">已加载: H₂O (水分子)</div>
+    </div>
 
-<button onclick="loadWater()">H₂O</button>
-<button onclick="selectMol('h2o2.mol', [2])">H₂O₂</button>
+    <div class="section" id="h2oSpecialSection">
+      <div class="section-title">H₂O 特殊动画（支持视角保持）</div>
+      <button id="btnSigmaV" class="special-btn" onclick="playSigmaVxz()">播放 σᵥ(xz) 连续反射</button>
+      <button id="btnSigmaPrimeV" class="identity-btn" onclick="playSigmaPrimeVyz()">播放 σᵥ′(yz) 反射</button>
+      <div class="note">先用鼠标旋转到想要的角度，再点击按钮进行反射动画</div>
+    </div>
 
-<button onclick="selectMol('C2H2Cl2.mol', [2])">C₂H₂Cl₂</button>
-<button onclick="selectMol('CHCl3.mol', [3])">CHCl₃</button>
+    <!-- 任务一：C2H2Cl2 操作面板，新增 σh 按钮 -->
+    <div class="section" id="c2h2cl2SpecialSection">
+      <div class="section-title">C₂H₂Cl₂ 对称操作动画（支持视角保持）</div>
+      <button id="btnC2H2Cl2Inversion" class="inversion-btn" onclick="playC2H2Cl2Inversion()">播放反演操作 i</button>
+      <button id="btnC2H2Cl2SigmaH" class="identity-btn" onclick="playC2H2Cl2SigmaH()">播放 σₕ 反射</button>
+      <div class="note">先用鼠标旋转到想要的角度，再点击按钮进行动画</div>
+    </div>
 
-<button onclick="selectMol('ClHC=C=CHCl.mol', [2])">ClHC=C=CHCl</button>
-<button onclick="selectMol('h3c-ccl3.mol', [3])">CH₃–CCl₃</button>
+    <div class="section" id="chcl3SpecialSection">
+      <div class="section-title">CHCl₃ σᵥ 反射动画（支持视角保持）</div>
+      <button id="btnSigmaV12" class="chcl3-btn" onclick="playCHCl3SigmaV12()">σᵥ₁（Cl1 ↔ Cl2）</button>
+      <button id="btnSigmaV23" class="chcl3-btn" onclick="playCHCl3SigmaV23()">σᵥ₂（Cl2 ↔ Cl3）</button>
+      <button id="btnSigmaV31" class="chcl3-btn" onclick="playCHCl3SigmaV31()">σᵥ₃（Cl3 ↔ Cl1）</button>
+      <div class="note">先用鼠标旋转到想要的角度，再点击按钮进行σᵥ反射</div>
+    </div>
 
-<button onclick="selectMol('CO2.mol', [2])">CO₂</button>
-<button onclick="selectMol('BF3.mol', [3])">BF₃</button>
+    <div class="section hidden" id="bf3SpecialSection">
+      <div class="section-title">BF₃ 对称操作动画（支持视角保持）</div>
+      <div style="font-size:12px;color:#374151;font-weight:600;padding-left:2px;margin-bottom:2px;">三条 C₂′ 旋转轴</div>
+      <button id="btnBF3C2_1" class="ethylene-c2-btn" onclick="doBF3C2(1)">C₂′₁（过 F₁）</button>
+      <button id="btnBF3C2_2" class="ethylene-c2-btn" onclick="doBF3C2(2)">C₂′₂（过 F₂）</button>
+      <button id="btnBF3C2_3" class="ethylene-c2-btn" onclick="doBF3C2(3)">C₂′₃（过 F₃）</button>
+      <div style="font-size:12px;color:#374151;font-weight:600;padding-left:2px;margin:6px 0 2px;">S₃ 旋转反射轴</div>
+      <button id="btnBF3S3" class="s6-btn" onclick="doBF3S3()">S₃（旋转120° + σₕ，效果同 C₃）</button>
+      <div style="font-size:12px;color:#374151;font-weight:600;padding-left:2px;margin:6px 0 2px;">σ 镜面反射</div>
+      <button id="btnBF3SigmaV1" class="special-btn" onclick="sigmaV1()">σᵥ₁ 反射</button>
+      <button id="btnBF3SigmaV2" class="special-btn" onclick="sigmaV2()">σᵥ₂ 反射</button>
+      <button id="btnBF3SigmaV3" class="special-btn" onclick="sigmaV3()">σᵥ₃ 反射</button>
+      <button id="btnBF3SigmaH"  class="identity-btn" onclick="sigmaH()">σₕ 反射（不改变）</button>
+      <div class="note">C₂′ 轴过 B 与各 F，旋转180°后另外两 F 互换；S₃ = C₃ × σₕ，对平面分子效果等同 C₃ 旋转120°。</div>
+    </div>
 
-<button onclick="selectMol('C6H6.mol', [6,3,2])">C₆H₆</button>
-<button onclick="selectMol('H2C=CH2.mol', [2])">H₂C=CH₂</button>
+    <div class="section" id="co2SpecialSection">
+      <div class="section-title">CO₂ 特殊动画（支持视角保持）</div>
+      <button id="btnInversion" class="special-btn" onclick="playInversion()">播放反演操作 i</button>
+      <button id="btnCo2C2prime" class="ethylene-c2-btn" onclick="playCo2C2prime()">C₂′(∞) 旋转</button>
+      <div class="note">先用鼠标旋转到想要的角度，再点击按钮进行动画<br>C₂′(∞) 每次点击演示不同方向的 C₂′ 轴（共3种，循环展示）</div>
+    </div>
 
-<button onclick="selectMol('H2CCCH2.mol', [2])">H₂CCCH₂</button>
-<button onclick="selectMol('PtCl4(e2-).mol', [4,2])">PtCl₄²⁻</button>
+    <div class="section" id="ethyleneC2Section" class="hidden">
+      <div class="section-title">乙烯（D₂h）三条 C₂ 旋转轴</div>
+      <button onclick="doEthyleneC2(1)" class="ethylene-c2-btn">C₂(x)   pgva_0_c2_1</button>
+      <button onclick="doEthyleneC2(2)" class="ethylene-c2-btn">C₂(y)   pgva_0_c2_2</button>
+      <button onclick="doEthyleneC2(3)" class="ethylene-c2-btn">C₂(z)   pgva_0_c2_3</button>
+      <div class="note">三条 C₂ 轴彼此正交，对应 D₂h 的三个主对称轴</div>
+    </div>
 
-<button onclick="selectMol('SbCl5(e2-).mol', [5])">SbCl₅²⁻</button>
+    <div class="section" id="ethyleneSpecialSection" class="hidden">
+      <div class="section-title">乙烯（D₂h）对称操作动画</div>
+      <button onclick="playEthyleneInversion()" class="ethylene-sigma-btn">i（反演）</button>
+      <button onclick="playEthyleneSigmaXz()" class="ethylene-sigma-btn">σ(xz) 镜面反射</button>
+      <button onclick="playEthyleneSigmaYz()" class="ethylene-sigma-btn">σ(yz) 镜面反射</button>
+      <button onclick="playEthyleneSigmaXy()" class="identity-btn">σ(xy) 镜面反射</button>
+      <div class="note">支持视角保持：先用鼠标旋转到想要的角度，再点击按钮</div>
+    </div>
+
+    <div class="section hidden" id="cyclohexaneSpecialSection">
+      <div class="section-title">环己烷椅式构型（D₃d）旋转动画</div>
+      <button onclick="doCnWithReset(3)" class="special-btn">C₃ 旋转（120°）</button>
+      <div class="note">先用鼠标旋转到想要的角度，再点击按钮进行C₃旋转</div>
+    </div>
+
+    <!-- 环己烷 σd 镜面操作演示面板 -->
+    <div class="section hidden" id="cyclohexaneSigmaDSection">
+      <div class="section-title">环己烷椅式构型（D₃d）σd 镜面操作</div>
+      <button id="btnSigmaD1" class="sigmad-btn" onclick="playCyclohexaneSigmaD1()">σd₁（C1↔C5, C2↔C4）</button>
+      <button id="btnSigmaD2" class="sigmad-btn" onclick="playCyclohexaneSigmaD2()">σd₂（C1↔C3, C6↔C4）</button>
+      <button id="btnSigmaD3" class="sigmad-btn" onclick="playCyclohexaneSigmaD3()">σd₃（C6↔C2, C5↔C3）</button>
+      <div class="note" style="margin-top:6px;">
+        <b>σd（二面镜面）</b>：D₃d 点群中三个 σd 镜面，每个镜面平分两 C₂ 轴的夹角。<br>
+        每次操作互换对角碳原子及其直接相连的所有氢原子。<br>
+        先用鼠标旋转到想要的角度，再点击按钮进行动画。
+      </div>
+    </div>
+
+    <!-- 任务二：CH3-CCl3 σh 操作演示面板 -->
+    <div class="section hidden" id="ch3ccl3SpecialSection">
+      <div class="section-title">CH₃–CCl₃ σᵥ 旋转反射动画</div>
+      <button id="btnCH3CCl3SH1" class="ch3ccl3-sh-btn" onclick="playCH3CCl3SH1()">σᵥ₁（H7↔H8，Cl2↔Cl3）</button>
+      <button id="btnCH3CCl3SH2" class="ch3ccl3-sh-btn" onclick="playCH3CCl3SH2()">σᵥ₂（H7↔H6，Cl1↔Cl3）</button>
+      <button id="btnCH3CCl3SH3" class="ch3ccl3-sh-btn" onclick="playCH3CCl3SH3()">σᵥ₃（H6↔H8，Cl2↔Cl1）</button>
+      <div class="note">先用鼠标旋转到想要的角度，再点击按钮进行σᵥ反射动画</div>
+    </div>
+
+    <!-- S₆ 操作演示 -->
+    <div class="section hidden" id="cyclohexaneS6Section">
+      <div class="section-title">环己烷椅式构型 S₆ 旋转反射轴（D₃d）</div>
+      <button id="btnS6Full" class="s6-btn" onclick="playCyclohexaneS6Full()">
+        ▶ S₆ 完整操作（旋转60° + 反射）
+      </button>
+      <div style="margin-top:6px; margin-bottom:2px; font-size:12px; color:#6b21a8; font-weight:600; padding-left:4px;">
+        分步演示：
+      </div>
+      <button id="btnS6Step1" class="s6-step-btn" onclick="playCyclohexaneS6Step1()">
+        第①步：C₆ 旋转 60°
+      </button>
+      <button id="btnS6Step2" class="s6-step-btn" onclick="playCyclohexaneS6Step2()">
+        第②步：σₕ 上下翻转（恢复椅式）
+      </button>
+      <div class="note" style="margin-top:6px;">
+        <b>S₆ = C₆ × σₕ</b>：先绕 C₃ 轴旋转 60°，得到"扭船式"中间态，再做水平镜面反射，上下碳原子互换，恢复为椅式构型。<br>
+        <span style="color:#d946ef;">• 完整操作</span>：两步连续播放<br>
+        <span style="color:#f97316;">• 分步演示</span>：先点①再点②，观察每步变化
+      </div>
+    </div>
+
+    <!-- 苯 D6h 对称操作演示面板 -->
+    <div class="section hidden" id="benzeneSpecialSection">
+      <div class="section-title">苯（D₆ʰ）对称操作动画</div>
+
+      <div style="font-size:12px;color:#374151;font-weight:600;padding-left:2px;margin-bottom:2px;">水平镜面</div>
+      <button id="btnBenzSigmaH" class="identity-btn" onclick="playBenzSigmaH()">σₕ 反射（不改变）</button>
+
+      <div style="font-size:12px;color:#c2410c;font-weight:600;padding-left:2px;margin:6px 0 2px;">三个 σᵥ 垂直镜面（过 C–H 轴）</div>
+      <button id="btnBenzSv1" class="benz-sigmav-btn" onclick="playBenzSigmaV(1)">σᵥ₁（过 C₁·C₇ 轴）</button>
+      <button id="btnBenzSv2" class="benz-sigmav-btn" onclick="playBenzSigmaV(2)">σᵥ₂（过 C₂·C₈ 轴）</button>
+      <button id="btnBenzSv3" class="benz-sigmav-btn" onclick="playBenzSigmaV(3)">σᵥ₃（过 C₃·C₉ 轴）</button>
+
+      <div style="font-size:12px;color:#0369a1;font-weight:600;padding-left:2px;margin:6px 0 2px;">三个 σd 二面镜面（平分 C–C 键）</div>
+      <button id="btnBenzSd1" class="benz-sigmad-btn" onclick="playBenzSigmaD(1)">σd₁（平分 C₁C₂ / C₇C₈）</button>
+      <button id="btnBenzSd2" class="benz-sigmad-btn" onclick="playBenzSigmaD(2)">σd₂（平分 C₂C₃ / C₈C₉）</button>
+      <button id="btnBenzSd3" class="benz-sigmad-btn" onclick="playBenzSigmaD(3)">σd₃（平分 C₃C₇ / C₉C₁）</button>
+
+      <div style="font-size:12px;color:#6b21a8;font-weight:600;padding-left:2px;margin:6px 0 2px;">反演中心</div>
+      <button id="btnBenzInv" class="benz-inv-btn" onclick="playBenzInversion()">反演操作 i</button>
+
+      <div class="note" style="margin-top:6px;">
+        <span style="color:#6b7280;">• σₕ</span>：分子平面，所有原子均在其上，反射不改变结构<br>
+        <span style="color:#c2410c;">• σᵥ</span>：过一对对位 C–H，相邻两组 CH 互换位置<br>
+        <span style="color:#0369a1;">• σd</span>：平分 C–C 键，所有原子两两互换，无原子在平面上<br>
+        <span style="color:#6b21a8;">• i</span>：所有原子向中心聚拢后到达对称位置
+      </div>
+    </div>
+
+    <div class="section hidden" id="ferroceneSpecialSection">
+      <div class="section-title">二茂铁（D₅d）对称操作动画</div>
+
+      <div style="font-size:12px;color:#374151;font-weight:600;padding-left:2px;margin-bottom:2px;">旋转轴</div>
+      <button onclick="doCnWithReset(5)" class="special-btn">C₅ 旋转（72°）</button>
+
+      <div style="font-size:12px;color:#6b21a8;font-weight:600;padding-left:2px;margin:6px 0 2px;">S₁₀ 旋转反射轴</div>
+      <button id="btnFerroceneS10Full" class="s6-btn" onclick="playFerroceneS10Full()">▶ S₁₀ 完整操作（旋转36° + 反射）</button>
+      <div style="margin-top:2px; margin-bottom:2px; font-size:12px; color:#7c2d12; font-weight:600; padding-left:4px;">S₁₀ 分步演示：</div>
+      <button id="btnFerroceneS10Step1" class="s6-step-btn" onclick="playFerroceneS10Step1()">第①步：C₁₀ 旋转 36°</button>
+      <button id="btnFerroceneS10Step2" class="s6-step-btn" onclick="playFerroceneS10Step2()">第②步：σₕ 上下反射</button>
+
+      <div style="font-size:12px;color:#374151;font-weight:600;padding-left:2px;margin:6px 0 2px;">反演中心</div>
+      <button id="btnFerroceneInversion" class="inversion-btn" onclick="playFerroceneInversion()">反演操作 i</button>
+
+      <div style="font-size:12px;color:#0369a1;font-weight:600;padding-left:2px;margin:6px 0 2px;">五个 σd 二面镜面</div>
+      <button id="btnFerSd1" class="sigmad-btn" onclick="playFerroceneSigmaD(1)">σd₁</button>
+      <button id="btnFerSd2" class="sigmad-btn" onclick="playFerroceneSigmaD(2)">σd₂</button>
+      <button id="btnFerSd3" class="sigmad-btn" onclick="playFerroceneSigmaD(3)">σd₃</button>
+      <button id="btnFerSd4" class="sigmad-btn" onclick="playFerroceneSigmaD(4)">σd₄</button>
+      <button id="btnFerSd5" class="sigmad-btn" onclick="playFerroceneSigmaD(5)">σd₅</button>
+
+      <div class="note" style="margin-top:6px;">
+        <b>注意</b>：所有操作均基于 D₅d 交错构型，点击后自动切换。<br>
+        <span style="color:#d946ef;">• S₁₀ = C₁₀ × σₕ</span>：旋转36°后上下反射，分子恢复原状<br>
+        <span style="color:#3730a3;">• 反演 i</span>：每个原子穿过铁原子到达对称位置<br>
+        <span style="color:#0369a1;">• σd</span>：含 C₅ 轴、平分相邻两 C₂ 轴夹角的镜面，分子一半与另一半互换
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">可用 Cₙ 旋转操作</div>
+      <button id="btnC2" class="hidden" onclick="doCnWithReset(2)">C₂</button>
+      <button id="btnC3" class="hidden" onclick="doCnWithReset(3)">C₃</button>
+      <button id="btnC4" class="hidden" onclick="doCnWithReset(4)">C₄</button>
+      <button id="btnC5" class="hidden" onclick="doCnWithReset(5)">C₅</button>
+      <button id="btnC6" class="hidden" onclick="doCnWithReset(6)">C₆</button>
+      <div class="status-indicator" id="op-status">可用操作: C₂</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">视图控制</div>
+      <button onclick="resetView()">重置视图</button>
+      <button onclick="Jmol.script(myJmol, 'spin on;')">自动旋转</button>
+      <button onclick="Jmol.script(myJmol, 'spin off;')">停止旋转</button>
+      <div class="note">重置视图可以恢复分子的原始状态</div>
+    </div>
+
+  </div>
 </div>
 
-<!-- ================= 对称操作 ================= -->
-<div class="panel">
-<strong>可用对称操作</strong><br>
-
-<button id="btnC2" class="hidden" onclick="doCn(2)">C₂</button>
-<button id="btnC3" class="hidden" onclick="doCn(3)">C₃</button>
-<button id="btnC4" class="hidden" onclick="doCn(4)">C₄</button>
-<button id="btnC5" class="hidden" onclick="doCn(5)">C₅</button>
-<button id="btnC6" class="hidden" onclick="doCn(6)">C₆</button>
-
-<button id="btnSigma" class="hidden" onclick="sigma_v_xz()">σᵥ(xz)</button>
-<button id="btnSigmaYZ" class="hidden" onclick="sigma_v_yz()">σᵥ(yz)</button>
+<!-- 恒等操作全局提示遮罩 -->
+<div id="identity-overlay" class="identity-overlay">
+  <div class="identity-dialog">
+    <div id="identity-content"></div>
+    <button class="identity-confirm-btn" onclick="confirmIdentityMessage()">确认</button>
+  </div>
 </div>
-
-<div id="viewer"></div>
 
 <script>
 Jmol.setDocument(0);
+var Info = {
+  width: "100%",
+  height: "100%",
+  use: "HTML5",
+  j2sPath: "jsmol/j2s",
+  script: "set antialiasDisplay; set zoomLarge false; background white;"
+};
+var myJmol = Jmol.getApplet("myJmol", Info);
+document.getElementById("viewer").innerHTML = Jmol.getAppletHtml(myJmol);
 
-/* ========= H₂O 基准模型 ========= */
-var waterBaseModel = `
-load data "model xyz"
+var molecules = [
+  {file: "water.xyz", displayName: "H₂O", pointGroup: "C2v", cnList: [2]},
+  {file: "C2H2Cl2.mol", displayName: "C₂H₂Cl₂", pointGroup: "C2v", cnList: [2]},
+  {file: "h2o2.mol", displayName: "H₂O₂", pointGroup: "C2", cnList: [2]},
+  {file: "CHCl3.mol", displayName: "CHCl₃", pointGroup: "C3v", cnList: [3]},
+  {file: "h3c-ccl3.mol", displayName: "CH₃–CCl₃", pointGroup: "C3v", cnList: [3]},
+  {file: "ClHC=C=CHCl.mol", displayName: "ClHC=C=CHCl", pointGroup: "C2h", cnList: [2]},
+  {file: "CO2.mol", displayName: "CO₂", pointGroup: "D∞h", cnList: [2]},
+  {file: "BF3.mol", displayName: "BF₃", pointGroup: "D3h", cnList: [3]},
+  {file: "SbCl5(e2-).mol", displayName: "SbCl₅²⁻", pointGroup: "D3h", cnList: [5]},
+  {file: "C6H6.mol", displayName: "C₆H₆", pointGroup: "D6h", cnList: [6,3,2]},
+  {file: "H2C=CH2.mol", displayName: "H₂C=CH₂", pointGroup: "D2h", cnList: [2]},
+  {file: "H2CCCH2.mol", displayName: "H₂CCCH₂", pointGroup: "D2h", cnList: [2]},
+  {file: "PtCl4(e2-).mol", displayName: "PtCl₄²⁻", pointGroup: "D4h", cnList: [4,2]},
+  {file: "cyclohexane_chair.xyz", displayName: "环己烷椅式构型", pointGroup: "D3d", cnList: [3,2]},
+  {file: "ferrocene.xyz", displayName: "二茂铁", pointGroup: "D5d", cnList: [5,2]}
+];
+
+var pointGroupText = {
+  "water.xyz":       { name:"C₂ᵥ", text:"水分子属于 C₂ᵥ 点群，具有一个 C₂ 主轴和两个垂直镜面 σᵥ。" },
+  "h2o2.mol":        { name:"C₂",  text:"过氧化氢为非平面构型，属于 C₂ 点群，仅包含一个 C₂ 旋转轴。" },
+  "C2H2Cl2.mol":     { name:"C₂ᵥ", text:"1,2 二氯乙烯（顺式）属于 C₂ᵥ 点群，具有 C₂ 轴与两个镜面。" },
+  "CHCl3.mol":       { name:"C₃ᵥ", text:"氯仿属于 C₃ᵥ 点群，具有一个 C₃ 主轴和三个 σᵥ 镜面。" },
+  "ClHC=C=CHCl.mol": { name:"C₂ʰ", text:"ClHC=C=CHCl 为平面分子，具有 C₂ 轴与反演中心，属于 C₂ʰ 点群。" },
+  "h3c-ccl3.mol":    { name:"C₃ᵥ", text:"CH₃–CCl₃ 近似属于 C₃ᵥ 点群，具有一条 C₃ 主轴和 σᵥ 镜面。" },
+  "CO2.mol":         { name:"D∞ʰ", text:"CO₂ 为线性分子，具有反演中心 i、无穷多个 C₂ 轴及 σₕ、σᵥ。" },
+  "BF3.mol":         { name:"D₃ʰ", text:"BF₃ 为平面三角结构，属于 D₃ʰ 点群，具有 C₃ 主轴与 σₕ。" },
+  "C6H6.mol":        { name:"D₆ʰ", text:"苯分子属于 D₆ʰ 点群，具有 C₆ 主轴、多个 C₂ 轴、σₕ、σᵥ 及反演中心。" },
+  "H2C=CH2.mol":     { name:"D₂ʰ", text:"乙烯为平面分子，具有三个互相垂直的 C₂ 轴和反演中心。" },
+  "H2CCCH2.mol":     { name:"D₂ʰ", text:"丁二烯平面构型属于 D₂ʰ 点群，具有 C₂ 轴、σₕ 与反演中心。" },
+  "PtCl4(e2-).mol":  { name:"D₄ʰ", text:"平方平面 PtCl₄²⁻ 属于 D₄ʰ 点群，具有 C₄ 主轴与 σₕ。" },
+  "SbCl5(e2-).mol":  { name:"D₃ʰ", text:"SbCl₅²⁻ 为三角双锥构型，属于 D₃ʰ 点群。" },
+  "cyclohexane_chair.xyz": { name:"D₃d", text:"环己烷椅式构型属于 D₃d 点群，具有一个 C₃ 主轴、三个 C₂ 轴、反演中心 i 和三个 σd 镜面。其 S₆ 非真旋转轴（S₆ = C₆·σₕ）是该点群的重要对称元素。" },
+  "ferrocene.xyz":         { name:"D₅d", text:"二茂铁（交错构型）属于 D₅d 点群，具有一个 C₅ 主轴、五个 C₂ 轴、反演中心和镜面等对称元素。" }
+};
+
+// ================================================================
+// 环己烷椅式构型 - 基于 xyz 的原始动态计算模型（用于 S6 等）
+// ================================================================
+const r = 1.2526;
+const zC = 0.2527;
+const rHeq = 2.1700;
+const zHeq = 0.2527;
+const rHax = 1.2526;
+const zHax = 1.4270;
+
+function chairAtomCoords() {
+  const deg = Math.PI / 180;
+  const atoms = [];
+  for (let i = 0; i < 6; i++) {
+    const angle = (30 + 60 * i) * deg;
+    const x = r * Math.cos(angle);
+    const y = r * Math.sin(angle);
+    const z = (i % 2 === 0) ? zC : -zC;
+    atoms.push({el: 'C', x, y, z});
+  }
+  for (let i = 0; i < 6; i++) {
+    const angle = (30 + 60 * i) * deg;
+    const isUp = (i % 2 === 0);
+    const xAx = rHax * Math.cos(angle);
+    const yAx = rHax * Math.sin(angle);
+    const zAx = isUp ? zHax : -zHax;
+    atoms.push({el: 'H', x: xAx, y: yAx, z: zAx});
+    const xEq = rHeq * Math.cos(angle);
+    const yEq = rHeq * Math.sin(angle);
+    const zEq = isUp ? zHeq : -zHeq;
+    atoms.push({el: 'H', x: xEq, y: yEq, z: zEq});
+  }
+  return atoms;
+}
+
+function buildChairXyz(atoms) {
+  const n = atoms.length;
+  let xyz = `${n}\ncyclohexane_chair D3d\n`;
+  atoms.forEach(a => {
+    xyz += `${a.el}  ${a.x.toFixed(6)}  ${a.y.toFixed(6)}  ${a.z.toFixed(6)}\n`;
+  });
+  return xyz;
+}
+
+function chairLoadScript(xyzStr) {
+  return `
+    load data "chair xyz"
+${xyzStr}    end "chair xyz"
+
+    set zoomlarge false;
+    set antialiasDisplay;
+    spacefill 23%;
+    wireframe 0.15;
+    color carbon gray;
+    color hydrogen white;
+    center;
+    zoom 120;
+  `;
+}
+
+function buildChairBaseScript() {
+  const atoms = chairAtomCoords();
+  return chairLoadScript(buildChairXyz(atoms));
+}
+
+function rotateZ(atoms, angle_rad) {
+  const c = Math.cos(angle_rad);
+  const s = Math.sin(angle_rad);
+  return atoms.map(a => ({
+    el: a.el,
+    x:  a.x * c - a.y * s,
+    y:  a.x * s + a.y * c,
+    z:  a.z
+  }));
+}
+
+function reflectSigmaH(atoms) {
+  return atoms.map(a => ({el: a.el, x: a.x, y: a.y, z: -a.z}));
+}
+
+function buildTranslateScript(fromAtoms, toAtoms, steps, delayPerStep) {
+  let script = '';
+  for (let step = 0; step < steps; step++) {
+    for (let i = 0; i < fromAtoms.length; i++) {
+      const dx = ((toAtoms[i].x - fromAtoms[i].x) / steps).toFixed(6);
+      const dy = ((toAtoms[i].y - fromAtoms[i].y) / steps).toFixed(6);
+      const dz = ((toAtoms[i].z - fromAtoms[i].z) / steps).toFixed(6);
+      script += `select atomno=${i + 1}; translateSelected {${dx} ${dy} ${dz}};`;
+    }
+    script += `delay ${delayPerStep};`;
+  }
+  return script;
+}
+
+var s6IntermediateAtoms = null;
+var s6BaseAtoms = null;
+var ferroceneS10IntermediateAtoms = null;
+
+// ================================================================
+// 环己烷 mol 文件内联模型（用于 σd 动画）
+// 原子编号严格按 mol 文件顺序（1-indexed）：
+//   1=C1, 2=C2, 3=C3, 4=C4, 5=C5, 6=C6
+//   7=H(C1 axial), 8=H(C1 eq)
+//   9=H(C2 axial), 10=H(C2 eq)
+//   11=H(C3 eq), 12=H(C3 axial)
+//   13=H(C4 axial), 14=H(C4 eq)
+//   15=H(C5 eq), 16=H(C5 axial)
+//   17=H(C6 axial), 18=H(C6 eq)
+// ================================================================
+var cyclohexaneMolBaseModel = `load data "chair xyz"
+18
+cyclohexane_chair D3d
+C  0.72221882  1.25097486 -0.22900000
+C -0.72226660  1.25094728  0.22900000
+C -1.44448542 -0.00002759 -0.22900000
+C -0.72221882 -1.25097486  0.22900000
+C  0.72226660 -1.25094728 -0.22900000
+C  1.44448542  0.00002759  0.22900000
+H  0.75819432  1.31328901 -1.34840000
+H  1.24483963  2.15622058  0.17600000
+H -0.75824448  1.31326005  1.34840000
+H -1.24492199  2.15617304 -0.17600000
+H -2.48976162 -0.00004755  0.17600000
+H -1.51643880 -0.00002896 -1.34840000
+H -0.75819432 -1.31328901  1.34840000
+H -1.24483963 -2.15622058 -0.17600000
+H  1.24492199 -2.15617304  0.17600000
+H  0.75824448 -1.31326005 -1.34840000
+H  1.51643880  0.00002896  1.34840000
+H  2.48976162  0.00004755 -0.17600000
+end "chair xyz"
+
+set zoomlarge false;
+set antialiasDisplay;
+spacefill 23%;
+wireframe 0.15;
+color carbon gray;
+color hydrogen white;
+center;
+zoom 120;
+`;
+
+// Atom coordinates array (0-indexed internally, but accessed by atomno 1-18)
+// Format: [x, y, z]
+var cyclohexaneAtoms = {
+  1:  [ 0.72221882,  1.25097486, -0.22900000],  // C1
+  2:  [-0.72226660,  1.25094728,  0.22900000],  // C2
+  3:  [-1.44448542, -0.00002759, -0.22900000],  // C3
+  4:  [-0.72221882, -1.25097486,  0.22900000],  // C4
+  5:  [ 0.72226660, -1.25094728, -0.22900000],  // C5
+  6:  [ 1.44448542,  0.00002759,  0.22900000],  // C6
+  7:  [ 0.75819432,  1.31328901, -1.34840000],  // H7 (C1 axial)
+  8:  [ 1.24483963,  2.15622058,  0.17600000],  // H8 (C1 equatorial)
+  9:  [-0.75824448,  1.31326005,  1.34840000],  // H9 (C2 axial)
+  10: [-1.24492199,  2.15617304, -0.17600000],  // H10 (C2 equatorial)
+  11: [-2.48976162, -0.00004755,  0.17600000],  // H11 (C3 equatorial)
+  12: [-1.51643880, -0.00002896, -1.34840000],  // H12 (C3 axial)
+  13: [-0.75819432, -1.31328901,  1.34840000],  // H13 (C4 axial)
+  14: [-1.24483963, -2.15622058, -0.17600000],  // H14 (C4 equatorial)
+  15: [ 1.24492199, -2.15617304,  0.17600000],  // H15 (C5 equatorial)
+  16: [ 0.75824448, -1.31326005, -1.34840000],  // H16 (C5 axial)
+  17: [ 1.51643880,  0.00002896,  1.34840000],  // H17 (C6 axial)
+  18: [ 2.48976162,  0.00004755, -0.17600000]   // H18 (C6 equatorial)
+};
+
+/**
+ * 通用 σd 动画函数
+ * swaps: [[idA, idB], ...] 需要互换的原子对列表（每次操作两组）
+ * label: 操作名称字符串
+ * btnId: 按钮 id
+ */
+function playCyclohexaneSigmaD(swaps, label, btnId) {
+  if (currentFile !== 'cyclohexane_chair.xyz' || isAnimating) return;
+  isAnimating = true;
+
+  const btn = document.getElementById(btnId);
+  if (btn) { btn.disabled = true; btn.textContent = label + ' 动画播放中...'; }
+
+  const opStatus = document.getElementById('op-status');
+  opStatus.textContent = '正在执行环己烷 ' + label + '...';
+  opStatus.classList.add('loading');
+
+  // 保存视角，加载 mol 模型
+  Jmol.script(myJmol, 'save orientation myView;');
+  Jmol.script(myJmol, cyclohexaneMolBaseModel + 'restore orientation myView;');
+
+  const steps = 20;
+  const delayPerStep = 0.025;
+
+  setTimeout(() => {
+    let script = 'set echo off; delay 0.15;';
+
+    for (let step = 0; step < steps; step++) {
+      swaps.forEach(([idA, idB]) => {
+        const A = cyclohexaneAtoms[idA];
+        const B = cyclohexaneAtoms[idB];
+        const dxA = ((B[0] - A[0]) / steps).toFixed(5);
+        const dyA = ((B[1] - A[1]) / steps).toFixed(5);
+        const dzA = ((B[2] - A[2]) / steps).toFixed(5);
+        const dxB = ((A[0] - B[0]) / steps).toFixed(5);
+        const dyB = ((A[1] - B[1]) / steps).toFixed(5);
+        const dzB = ((A[2] - B[2]) / steps).toFixed(5);
+        script += `select atomno=${idA}; translateSelected {${dxA} ${dyA} ${dzA}};`;
+        script += `select atomno=${idB}; translateSelected {${dxB} ${dyB} ${dzB}};`;
+      });
+      script += `delay ${delayPerStep};`;
+    }
+
+    script += `delay 0.3; background echo "${label} 对称反射完成"; delay 0.8; background echo OFF;`;
+    Jmol.script(myJmol, script);
+
+    const totalTime = (steps * delayPerStep + 1.3) * 1000;
+    setTimeout(() => {
+      isAnimating = false;
+      if (btn) { btn.disabled = false; btn.textContent = label; }
+      opStatus.classList.remove('loading');
+      opStatus.textContent = label + ' 对称操作完成';
+      setTimeout(() => { opStatus.textContent = '可用操作: C₃, C₂'; }, 2000);
+    }, totalTime);
+  }, 400);
+}
+
+// σd₁: C1(1)+H7(7)+H8(8) ↔ C5(5)+H16(16)+H15(15) 且 C2(2)+H9(9)+H10(10) ↔ C4(4)+H13(13)+H14(14)
+function playCyclohexaneSigmaD1() {
+  playCyclohexaneSigmaD(
+    [[1,5],[7,16],[8,15],[2,4],[9,13],[10,14]],
+    'σd₁',
+    'btnSigmaD1'
+  );
+}
+
+// σd₂: C1(1)+H7(7)+H8(8) ↔ C3(3)+H12(12)+H11(11) 且 C6(6)+H17(17)+H18(18) ↔ C4(4)+H13(13)+H14(14)
+function playCyclohexaneSigmaD2() {
+  playCyclohexaneSigmaD(
+    [[1,3],[7,12],[8,11],[6,4],[17,13],[18,14]],
+    'σd₂',
+    'btnSigmaD2'
+  );
+}
+
+// σd₃: C6(6)+H17(17)+H18(18) ↔ C2(2)+H9(9)+H10(10) 且 C5(5)+H16(16)+H15(15) ↔ C3(3)+H12(12)+H11(11)
+function playCyclohexaneSigmaD3() {
+  playCyclohexaneSigmaD(
+    [[6,2],[17,9],[18,10],[5,3],[16,12],[15,11]],
+    'σd₃',
+    'btnSigmaD3'
+  );
+}
+
+// ================================================================
+// S6 动画（保持原有 xyz 计算逻辑）
+// ================================================================
+function playCyclohexaneS6Full() {
+  if (currentFile !== 'cyclohexane_chair.xyz' || isAnimating) return;
+  isAnimating = true;
+  setS6Buttons(true, 'btnS6Full');
+  document.getElementById('btnS6Full').textContent = 'S₆ 动画播放中...';
+  const opStatus = document.getElementById('op-status');
+  opStatus.textContent = 'S₆ 操作：旋转60° + 反射，正在播放...';
+  opStatus.classList.add('loading');
+  Jmol.script(myJmol, 'save orientation s6View;');
+  const baseAtoms = chairAtomCoords();
+  s6BaseAtoms = baseAtoms;
+  const rotatedAtoms = rotateZ(baseAtoms, Math.PI / 3);
+  const finalAtoms   = reflectSigmaH(rotatedAtoms);
+  const steps1 = 20;
+  const steps2 = 20;
+  const delay1 = 0.025;
+  const delay2 = 0.025;
+  const baseScript = buildChairBaseScript();
+  Jmol.script(myJmol, baseScript + 'restore orientation s6View;');
+  setTimeout(() => {
+    let script = 'set echo off;';
+    script += buildTranslateScript(baseAtoms, rotatedAtoms, steps1, delay1);
+    script += `delay 0.3;`;
+    script += buildTranslateScript(rotatedAtoms, finalAtoms, steps2, delay2);
+    script += `
+      delay 0.4;
+      background echo "S₆ = C₆ × σₕ 完成：旋转60° + 上下反射，恢复椅式";
+      delay 0.8;
+      background echo OFF;
+    `;
+    Jmol.script(myJmol, script);
+    const totalTime = (steps1 * delay1 + steps2 * delay2 + 1.5) * 1000;
+    setTimeout(() => {
+      isAnimating = false;
+      setS6Buttons(false, null);
+      document.getElementById('btnS6Full').textContent = '▶ S₆ 完整操作（旋转60° + 反射）';
+      opStatus.classList.remove('loading');
+      opStatus.textContent = 'S₆ 操作完成：C₆旋转60° → σₕ反射，恢复椅式构型';
+      s6IntermediateAtoms = null;
+    }, totalTime);
+  }, 500);
+}
+
+function playCyclohexaneS6Step1() {
+  if (currentFile !== 'cyclohexane_chair.xyz' || isAnimating) return;
+  isAnimating = true;
+  setS6Buttons(true, 'btnS6Step1');
+  document.getElementById('btnS6Step1').textContent = '第①步 旋转中...';
+  const opStatus = document.getElementById('op-status');
+  opStatus.textContent = 'S₆ 第①步：绕 C₆ 轴旋转 60°（椅式 → 扭船式中间态）...';
+  opStatus.classList.add('loading');
+  Jmol.script(myJmol, 'save orientation s6View;');
+  const baseAtoms = chairAtomCoords();
+  s6BaseAtoms = baseAtoms;
+  const rotatedAtoms = rotateZ(baseAtoms, Math.PI / 3);
+  s6IntermediateAtoms = rotatedAtoms;
+  const baseScript = buildChairBaseScript();
+  Jmol.script(myJmol, baseScript + 'restore orientation s6View;');
+  const steps = 24;
+  const delay = 0.025;
+  setTimeout(() => {
+    let script = 'set echo off;';
+    script += buildTranslateScript(baseAtoms, rotatedAtoms, steps, delay);
+    script += `
+      delay 0.3;
+      background echo "第①步完成：旋转60°→扭船式中间态（非平衡构型）";
+      delay 0.8;
+      background echo OFF;
+    `;
+    Jmol.script(myJmol, script);
+    setTimeout(() => {
+      isAnimating = false;
+      setS6Buttons(false, null);
+      document.getElementById('btnS6Step1').textContent = '第①步：C₆ 旋转 60° ✓';
+      opStatus.classList.remove('loading');
+      opStatus.textContent = '第①步完成：已旋转60°（扭船式中间态），请继续点击第②步';
+    }, (steps * delay + 1.2) * 1000);
+  }, 500);
+}
+
+function playCyclohexaneS6Step2() {
+  if (currentFile !== 'cyclohexane_chair.xyz' || isAnimating) return;
+  if (!s6IntermediateAtoms) {
+    showIdentityMessage(`
+      <div class="identity-dialog-title">请先执行第①步</div>
+      <div class="identity-dialog-body">
+        <p>请先点击 <strong>"第①步：C₆ 旋转 60°"</strong>，完成旋转动画后，再点击第②步进行 σₕ 反射。</p>
+        <p style="margin-top:8px;color:#6b7280;">点击"确认"关闭提示。</p>
+      </div>
+    `);
+    return;
+  }
+  isAnimating = true;
+  setS6Buttons(true, 'btnS6Step2');
+  document.getElementById('btnS6Step2').textContent = '第②步 反射中...';
+  const opStatus = document.getElementById('op-status');
+  opStatus.textContent = 'S₆ 第②步：σₕ 反射（z → -z），上下碳原子互换，恢复椅式...';
+  opStatus.classList.add('loading');
+  Jmol.script(myJmol, 'save orientation s6View;');
+  const fromAtoms = s6IntermediateAtoms;
+  const toAtoms   = reflectSigmaH(fromAtoms);
+  const intermediateXyz = buildChairXyz(fromAtoms);
+  const intermediateLoadScript = chairLoadScript(intermediateXyz);
+  Jmol.script(myJmol, intermediateLoadScript + 'restore orientation s6View;');
+  const steps = 24;
+  const delay = 0.025;
+  setTimeout(() => {
+    let script = 'set echo off;';
+    script += buildTranslateScript(fromAtoms, toAtoms, steps, delay);
+    script += `
+      delay 0.4;
+      background echo "第②步完成：σₕ 反射，上下互换 → 恢复椅式构型！S₆ 操作完成";
+      delay 1.0;
+      background echo OFF;
+    `;
+    Jmol.script(myJmol, script);
+    setTimeout(() => {
+      isAnimating = false;
+      s6IntermediateAtoms = null;
+      setS6Buttons(false, null);
+      document.getElementById('btnS6Step2').textContent = '第②步：σₕ 上下翻转（恢复椅式）';
+      document.getElementById('btnS6Step1').textContent = '第①步：C₆ 旋转 60°';
+      opStatus.classList.remove('loading');
+      opStatus.textContent = 'S₆ 全部完成！旋转60° + σₕ反射 = 恢复椅式构型（S₆ 对称操作验证完毕）';
+      setTimeout(() => {
+        if (!isAnimating) opStatus.textContent = '可用操作: C₃, C₂';
+      }, 3000);
+    }, (steps * delay + 1.5) * 1000);
+  }, 500);
+}
+
+function setS6Buttons(disabled, activeId) {
+  const ids = ['btnS6Full', 'btnS6Step1', 'btnS6Step2'];
+  ids.forEach(id => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.disabled = disabled;
+    btn.classList.toggle('active', !!(activeId && id === activeId));
+  });
+}
+
+// ================================================================
+// 基础模型字符串
+// ================================================================
+const co2BaseModel = `
+load data "model mol"
+CO2
+  OpenAI
+
+  3  2  0  0  0  0  0  0  0999 V2000
+   -1.1970    0.0000    0.0000 O
+    1.1970    0.0000    0.0000 O
+    0.0000    0.0000    0.0000 C
+  1  3  2  0
+  2  3  2  0
+M  END
+end "model mol"
+
+set antialiasDisplay;
+set zoomLarge false;
+spacefill 22%;
+wireframe 0.15;
+color oxygen red;
+color carbon gray;
+label %e;
+center;
+zoom 120;
+`;
+
+const h2oBaseModel = `
+load data "h2o xyz"
 3
-H2O
-O  0.000  0.000  0.000
-H  0.000  0.757  0.586
-H  0.000 -0.757  0.586
-end "model xyz"
-
+H₂O
+O  0.000   0.000   0.000
+H  0.000   0.757   0.586
+H  0.000  -0.757   0.586
+end "h2o xyz"
+set zoomlarge false;
 set antialiasDisplay;
 spacefill 23%;
 wireframe 0.15;
 color oxygen red;
 color hydrogen white;
+label %e;
+center;
+zoom 120;
 `;
 
-/* ========= JSmol 初始化 ========= */
-var Info = {
-  width: 420,
-  height: 420,
-  use: "HTML5",
-  j2sPath: "jsmol/j2s",
-  backgroundColor: "white"
-};
+const c2h2cl2BaseModel = `
+load data "model xyz"
+6
+C2H2Cl2
+Cl   2.1437   0.1015  -0.0002
+Cl  -2.1439  -0.1011  -0.0002
+C    0.5135  -0.4232   0.0002
+C   -0.5132   0.4227   0.0002
+H    0.4242  -1.5014   0.0001
+H   -0.4237   1.5009   0.0001
+end "model xyz"
 
-var applet = Jmol.getApplet("myJmol", Info);
-document.getElementById("viewer").innerHTML =
-  Jmol.getAppletHtml(applet);
+set zoomlarge false;
+set antialiasDisplay;
+spacefill 23%;
+wireframe 0.15;
+color chlorine green;
+color carbon gray;
+color hydrogen white;
+label %e;
+center;
+zoom 120;
+`;
 
-/* ========= 当前 Cn ========= */
+const chcl3BaseModel = `
+load data "model xyz"
+5
+CHCl3
+Cl  -0.0962  -1.6789   0.1394
+Cl  -1.4059   0.9228   0.1394
+Cl   1.5022   0.7561   0.1393
+C   -0.0001   0.0000  -0.4181
+H   -0.0001  -0.0001  -1.5111
+end "model xyz"
+
+set zoomlarge false;
+set antialiasDisplay;
+spacefill 23%;
+wireframe 0.15;
+color chlorine green;
+color carbon gray;
+color hydrogen white;
+center;
+zoom 120;
+`;
+
+const ch3ccl3BaseModel = `
+load data "model xyz"
+8
+CH3-CCl3
+Cl   1.4256   0.8888   0.5472
+Cl  -1.4837   0.7901   0.5450
+Cl   0.0565  -1.6797   0.5451
+C    0.0000   0.0000  -0.0571
+C    0.0015   0.0009  -1.5801
+H   -0.8640  -0.5388  -1.9823
+H   -0.0328   1.0210  -1.9805
+H    0.9025  -0.4788  -1.9805
+end "model xyz"
+
+set zoomlarge false;
+set antialiasDisplay;
+spacefill 23%;
+wireframe 0.15;
+color chlorine green;
+color carbon gray;
+color hydrogen white;
+center;
+zoom 120;
+`;
+
+const bf3BaseModel = `
+load data "model xyz"
+4
+BF3
+F  -1.1865   0.6850   0.0003
+B   0.0000   0.0000  -0.0016
+F   1.1865   0.6850   0.0003
+F   0.0000  -1.3700   0.0003
+end "model xyz"
+
+set zoomlarge false;
+set antialiasDisplay;
+spacefill 23%;
+wireframe 0.15;
+color fluorine lightgreen;
+color boron tan;
+center;
+zoom 120;
+`;
+
+const ethyleneBaseModel = `
+load data "model mol"
+C2H4
+  OpenAI
+
+  6  5  0  0  0  0  0  0  0999 V2000
+   -0.6672    0.0000    0.0000 C
+    0.6672    0.0000    0.0000 C
+   -1.2213   -0.9290    0.0708 H
+   -1.2212    0.9290   -0.0708 H
+    1.2213    0.9290   -0.0708 H
+    1.2213   -0.9290    0.0708 H
+  1  2  2
+  1  3  1
+  1  4  1
+  2  5  1
+  2  6  1
+M  END
+end "model mol"
+
+set zoomlarge false;
+set antialiasDisplay;
+spacefill 22%;
+wireframe 0.15;
+color carbon gray;
+color hydrogen white;
+center;
+zoom 120;
+`;
+
 var currentCn = [];
+var currentFile = null;
+var currentDisplayName = "";
+var isAnimating = false;
+var currentPointGroup = "all";
 
-/* ========= 加载水 ========= */
-function loadWater() {
-  currentCn = [2];
-
-  Jmol.script(applet, `
-    ${waterBaseModel}
-    center
-    zoom 140
-    rotate x 90
-    calculate pointgroup
-    draw pointgroup
-  `);
-
-  updateButtons(true);
+function initMoleculeButtons() {
+  updateMoleculeButtons("all");
 }
 
-/* ========= 加载其它分子 ========= */
-function selectMol(file, cnList) {
-  currentCn = cnList;
+function updateMoleculeButtons(pointGroup) {
+  currentPointGroup = pointGroup;
+  const container = document.getElementById("molecule-buttons-container");
+  container.innerHTML = "";
+  document.querySelectorAll(".pg-btn").forEach(btn => {
+    btn.classList.remove("active");
+  });
+  document.querySelector(`button[onclick="selectPointGroup('${pointGroup}')"]`).classList.add("active");
+  const pgStatus = document.getElementById("pg-status");
+  if (pointGroup === "all") {
+    pgStatus.textContent = "当前显示: 全部分子";
+  } else {
+    pgStatus.textContent = `当前显示: ${pointGroup} 点群`;
+  }
+  const filteredMolecules = molecules.filter(mol => {
+    if (pointGroup === "all") return true;
+    return mol.pointGroup === pointGroup;
+  });
+  filteredMolecules.forEach(mol => {
+    const button = document.createElement("button");
+    button.textContent = mol.displayName;
+    button.onclick = () => selectMol(mol.file, mol.cnList, mol.displayName);
+    container.appendChild(button);
+  });
+  if (filteredMolecules.length === 0) {
+    const noMolecules = document.createElement("div");
+    noMolecules.className = "note";
+    noMolecules.textContent = "该点群下暂无分子";
+    container.appendChild(noMolecules);
+  }
+}
 
-  Jmol.script(applet, `
-    load ${file}
+function selectPointGroup(pointGroup) {
+  if (isAnimating) return;
+  updateMoleculeButtons(pointGroup);
+}
+
+function selectMol(file, cnList, displayName) {
+  if (isAnimating) return;
+  currentFile = file;
+  currentCn = cnList;
+  currentDisplayName = displayName;
+  s6IntermediateAtoms = null;
+  s6BaseAtoms = null;
+  ferroceneS10IntermediateAtoms = null;
+  co2C2primeClickCount = 0;
+  resetAndLoadMol(file, displayName);
+}
+
+function resetAndLoadMol(file, displayName) {
+  isAnimating = true;
+  const statusEl = document.getElementById('mol-status');
+  statusEl.textContent = `正在加载: ${displayName}...`;
+  statusEl.classList.add('loading');
+  if (file === 'cyclohexane_chair.xyz') {
+    const baseScript = buildChairBaseScript();
+    Jmol.script(myJmol, baseScript + `
+      spin off;
+      calculate pointgroup;
+      draw pointgroup;
+    `);
+  } else if (file === 'h3c-ccl3.mol') {
+    Jmol.script(myJmol, ch3ccl3BaseModel + `
+      spin off;
+      calculate pointgroup;
+      draw pointgroup;
+    `);
+  } else {
+    Jmol.script(myJmol, `
+      load ${file}
+      center
+      zoom 120
+      spin off
+      calculate pointgroup
+      draw pointgroup
+    `);
+  }
+  updateButtons();
+  updatePointGroupInfo(file, displayName || file.split('.')[0]);
+  updateSpecialSectionVisibility();
+  setTimeout(() => {
+    statusEl.textContent = `已加载: ${displayName}`;
+    statusEl.classList.remove('loading');
+    if (currentCn.length > 0) {
+      document.getElementById('op-status').textContent = `可用操作: ${currentCn.map(n => 'C' + n).join(', ')}`;
+    } else {
+      document.getElementById('op-status').textContent = '此分子无可用的Cₙ对称操作';
+    }
+    isAnimating = false;
+  }, 800);
+}
+
+function updateButtons() {
+  [2,3,4,5,6].forEach(n => {
+    const btn = document.getElementById("btnC"+n);
+    if (btn) btn.classList.add("hidden");
+  });
+  currentCn.forEach(n => {
+    const btn = document.getElementById("btnC"+n);
+    if (btn) btn.classList.remove("hidden");
+  });
+}
+
+function updatePointGroupInfo(file, name) {
+  const t = document.querySelector(".pg-title");
+  const c = document.querySelector(".pg-text");
+  if (pointGroupText[file]) {
+    t.innerHTML = `点群说明（${pointGroupText[file].name}）`;
+    c.innerHTML = pointGroupText[file].text;
+  } else {
+    t.innerHTML = "点群说明";
+    c.innerHTML = "暂无该分子的点群说明。";
+  }
+}
+
+function updateSpecialSectionVisibility() {
+  const h2oSection = document.getElementById("h2oSpecialSection");
+  const c2h2cl2Section = document.getElementById("c2h2cl2SpecialSection");
+  const chcl3Section = document.getElementById("chcl3SpecialSection");
+  const co2Section = document.getElementById("co2SpecialSection");
+  const ethyleneC2Section = document.getElementById("ethyleneC2Section");
+  const ethyleneSpecialSection = document.getElementById("ethyleneSpecialSection");
+  const cyclohexaneSection = document.getElementById("cyclohexaneSpecialSection");
+  const cyclohexaneS6Section = document.getElementById("cyclohexaneS6Section");
+  const cyclohexaneSigmaDSection = document.getElementById("cyclohexaneSigmaDSection");
+  const ferroceneSection = document.getElementById("ferroceneSpecialSection");
+  const bf3Section = document.getElementById("bf3SpecialSection");
+  const ch3ccl3Section = document.getElementById("ch3ccl3SpecialSection");
+  const benzeneSection = document.getElementById("benzeneSpecialSection");
+
+  h2oSection.classList.add("hidden");
+  c2h2cl2Section.classList.add("hidden");
+  chcl3Section.classList.add("hidden");
+  co2Section.classList.add("hidden");
+  ethyleneC2Section.classList.add("hidden");
+  ethyleneSpecialSection.classList.add("hidden");
+  cyclohexaneSection.classList.add("hidden");
+  cyclohexaneS6Section.classList.add("hidden");
+  cyclohexaneSigmaDSection.classList.add("hidden");
+  ferroceneSection.classList.add("hidden");
+  bf3Section.classList.add("hidden");
+  ch3ccl3Section.classList.add("hidden");
+  benzeneSection.classList.add("hidden");
+
+  if (currentFile === 'water.xyz') {
+    h2oSection.classList.remove("hidden");
+  } else if (currentFile === 'C2H2Cl2.mol') {
+    c2h2cl2Section.classList.remove("hidden");
+  } else if (currentFile === 'CHCl3.mol') {
+    chcl3Section.classList.remove("hidden");
+  } else if (currentFile === 'CO2.mol') {
+    co2Section.classList.remove("hidden");
+  } else if (currentFile === 'H2C=CH2.mol') {
+    ethyleneC2Section.classList.remove("hidden");
+    ethyleneSpecialSection.classList.remove("hidden");
+  } else if (currentFile === 'cyclohexane_chair.xyz') {
+    cyclohexaneSection.classList.remove("hidden");
+    cyclohexaneSigmaDSection.classList.remove("hidden");
+    cyclohexaneS6Section.classList.remove("hidden");
+  } else if (currentFile === 'ferrocene.xyz') {
+    ferroceneSection.classList.remove("hidden");
+  } else if (currentFile === 'BF3.mol') {
+    bf3Section.classList.remove("hidden");
+  } else if (currentFile === 'h3c-ccl3.mol') {
+    ch3ccl3Section.classList.remove("hidden");
+  } else if (currentFile === 'C6H6.mol') {
+    benzeneSection.classList.remove("hidden");
+  }
+}
+
+function saveViewAndReset(baseModel) {
+  Jmol.script(myJmol, "save orientation myView;");
+  Jmol.script(myJmol, baseModel + "restore orientation myView;");
+}
+
+function showIdentityMessage(html) {
+  const overlay = document.getElementById('identity-overlay');
+  const content = document.getElementById('identity-content');
+  if (!overlay || !content) return;
+  content.innerHTML = html;
+  overlay.classList.add('show');
+  isAnimating = true;
+}
+
+function confirmIdentityMessage() {
+  const overlay = document.getElementById('identity-overlay');
+  if (!overlay) return;
+  overlay.classList.remove('show');
+  isAnimating = false;
+}
+
+// ================================================================
+// 任务一：C2H2Cl2 σh 反射（恒等操作提示）
+// ================================================================
+function playC2H2Cl2SigmaH() {
+  if (currentFile !== 'C2H2Cl2.mol' || isAnimating) return;
+
+  isAnimating = true;
+  const btn = document.getElementById("btnC2H2Cl2SigmaH");
+  btn.disabled = true;
+  btn.classList.add("active");
+  btn.textContent = "执行恒等操作...";
+
+  document.getElementById('op-status').classList.remove('loading');
+  document.getElementById('op-status').textContent = "σₕ：分子平面，所有原子均在该平面内 → 反射后完全不变";
+
+  saveViewAndReset(c2h2cl2BaseModel);
+
+  const html = `
+    <div class="identity-dialog-title">σₕ 反射：恒等操作</div>
+    <div class="identity-dialog-body">
+      <p><strong>反式-1,2-二氯乙烯</strong>具有水平镜面 σₕ（即分子平面）。所有原子均位于该平面内，或关于该平面对称分布。</p>
+      <p>在该平面反射下，每个原子<strong>映射回自身</strong>（或其等价原子），分子结构完全不变。</p>
+      <p style="margin-top:8px; color:#6b7280;">点击"确认"关闭本提示后，可以继续进行其它操作。</p>
+    </div>
+  `;
+  showIdentityMessage(html);
+
+  setTimeout(() => {
+    btn.disabled = false;
+    btn.classList.remove("active");
+    btn.textContent = "播放 σₕ 反射";
+  }, 300);
+}
+
+// ================================================================
+// 任务二：CH3-CCl3 三个 σᵥ 反射动画
+// ================================================================
+var ch3ccl3Atoms = {
+  1: {x: 1.4256,  y: 0.8888,  z: 0.5472},
+  2: {x:-1.4837,  y: 0.7901,  z: 0.5450},
+  3: {x: 0.0565,  y:-1.6797,  z: 0.5451},
+  4: {x: 0.0000,  y: 0.0000,  z:-0.0571},
+  5: {x: 0.0015,  y: 0.0009,  z:-1.5801},
+  6: {x:-0.8640,  y:-0.5388,  z:-1.9823},
+  7: {x:-0.0328,  y: 1.0210,  z:-1.9805},
+  8: {x: 0.9025,  y:-0.4788,  z:-1.9805}
+};
+
+function swapCH3CCl3Pairs(swaps, btnId, labelDone) {
+  Jmol.script(myJmol, "save orientation myView;");
+  Jmol.script(myJmol, ch3ccl3BaseModel + "restore orientation myView;");
+
+  const steps = 20;
+  const delayPerStep = 0.025;
+  let script = "set echo off; delay 0.15;";
+
+  for (let i = 0; i < steps; i++) {
+    swaps.forEach(({idA, idB}) => {
+      const A = ch3ccl3Atoms[idA];
+      const B = ch3ccl3Atoms[idB];
+      const dxA = ((B.x - A.x) / steps).toFixed(5);
+      const dyA = ((B.y - A.y) / steps).toFixed(5);
+      const dzA = ((B.z - A.z) / steps).toFixed(5);
+      const dxB = ((A.x - B.x) / steps).toFixed(5);
+      const dyB = ((A.y - B.y) / steps).toFixed(5);
+      const dzB = ((A.z - B.z) / steps).toFixed(5);
+      script +=
+        `select atomno=${idA}; translateSelected {${dxA} ${dyA} ${dzA}};` +
+        `select atomno=${idB}; translateSelected {${dxB} ${dyB} ${dzB}};`;
+    });
+    script += `delay ${delayPerStep};`;
+  }
+
+  script += `
+    delay 0.3;
+    calculate pointgroup;
+    draw pointgroup;
+    spin off;
+    background echo "CH₃–CCl₃ σᵥ 反射动画完成";
+    delay 0.6;
+    background echo OFF;
+  `;
+
+  Jmol.script(myJmol, script);
+}
+
+function setCH3CCl3Buttons(disabled, activeId) {
+  const ids = ['btnCH3CCl3SH1', 'btnCH3CCl3SH2', 'btnCH3CCl3SH3'];
+  ids.forEach(id => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.disabled = disabled;
+    btn.classList.toggle('active', !!(activeId && id === activeId));
+  });
+}
+
+function playCH3CCl3SH1() {
+  if (currentFile !== 'h3c-ccl3.mol' || isAnimating) return;
+  isAnimating = true;
+  setCH3CCl3Buttons(true, 'btnCH3CCl3SH1');
+  const btn = document.getElementById('btnCH3CCl3SH1');
+  btn.textContent = 'σᵥ₁ 动画播放中...';
+  document.getElementById('op-status').textContent = 'CH₃–CCl₃：正在执行 σᵥ₁（H7↔H8，Cl2↔Cl3）...';
+  document.getElementById('op-status').classList.add('loading');
+  swapCH3CCl3Pairs([{idA: 7, idB: 8},{idA: 2, idB: 3}], 'btnCH3CCl3SH1', 'σᵥ₁');
+  setTimeout(() => {
+    isAnimating = false;
+    setCH3CCl3Buttons(false, null);
+    btn.textContent = 'σᵥ₁（H7↔H8，Cl2↔Cl3）';
+    document.getElementById('op-status').classList.remove('loading');
+    document.getElementById('op-status').textContent = 'CH₃–CCl₃ σᵥ₁ 反射完成';
+    setTimeout(() => { document.getElementById('op-status').textContent = '可用操作: C₃'; }, 1500);
+  }, (20 * 0.025 + 1.2) * 1000);
+}
+
+function playCH3CCl3SH2() {
+  if (currentFile !== 'h3c-ccl3.mol' || isAnimating) return;
+  isAnimating = true;
+  setCH3CCl3Buttons(true, 'btnCH3CCl3SH2');
+  const btn = document.getElementById('btnCH3CCl3SH2');
+  btn.textContent = 'σᵥ₂ 动画播放中...';
+  document.getElementById('op-status').textContent = 'CH₃–CCl₃：正在执行 σᵥ₂（H7↔H6，Cl1↔Cl3）...';
+  document.getElementById('op-status').classList.add('loading');
+  swapCH3CCl3Pairs([{idA: 7, idB: 6},{idA: 1, idB: 3}], 'btnCH3CCl3SH2', 'σᵥ₂');
+  setTimeout(() => {
+    isAnimating = false;
+    setCH3CCl3Buttons(false, null);
+    btn.textContent = 'σᵥ₂（H7↔H6，Cl1↔Cl3）';
+    document.getElementById('op-status').classList.remove('loading');
+    document.getElementById('op-status').textContent = 'CH₃–CCl₃ σᵥ₂ 反射完成';
+    setTimeout(() => { document.getElementById('op-status').textContent = '可用操作: C₃'; }, 1500);
+  }, (20 * 0.025 + 1.2) * 1000);
+}
+
+function playCH3CCl3SH3() {
+  if (currentFile !== 'h3c-ccl3.mol' || isAnimating) return;
+  isAnimating = true;
+  setCH3CCl3Buttons(true, 'btnCH3CCl3SH3');
+  const btn = document.getElementById('btnCH3CCl3SH3');
+  btn.textContent = 'σᵥ₃ 动画播放中...';
+  document.getElementById('op-status').textContent = 'CH₃–CCl₃：正在执行 σᵥ₃（H6↔H8，Cl2↔Cl1）...';
+  document.getElementById('op-status').classList.add('loading');
+  swapCH3CCl3Pairs([{idA: 6, idB: 8},{idA: 2, idB: 1}], 'btnCH3CCl3SH3', 'σᵥ₃');
+  setTimeout(() => {
+    isAnimating = false;
+    setCH3CCl3Buttons(false, null);
+    btn.textContent = 'σᵥ₃（H6↔H8，Cl2↔Cl1）';
+    document.getElementById('op-status').classList.remove('loading');
+    document.getElementById('op-status').textContent = 'CH₃–CCl₃ σᵥ₃ 反射完成';
+    setTimeout(() => { document.getElementById('op-status').textContent = '可用操作: C₃'; }, 1500);
+  }, (20 * 0.025 + 1.2) * 1000);
+}
+
+// ================================================================
+// 二茂铁 S10 和反演操作（交错构型 D5d）
+// 注：S10 和 i 是 D5d 交错构型的对称元素。
+// 底部环（z<0）与用户提供的 mol 文件完全相同；
+// 顶部环（z>0）在底部环基础上绕 z 轴旋转 36° 得到交错构型。
+// ================================================================
+
+// 交错构型二茂铁原子坐标（1-indexed，按 mol 文件原子顺序）
+var ferroceneStaggeredAtoms = {
+  1:  [ 0.00000000,  0.00000000,  0.00000000],  // Fe
+  2:  [-0.00003329,  1.21548118, -1.65790000],  // C2 (bottom)
+  3:  [ 0.71446884, -0.98332536, -1.65790000],  // C3
+  4:  [ 1.15598101,  0.37563600, -1.65790000],  // C4
+  5:  [-0.71441498, -0.98336449, -1.65790000],  // C5
+  6:  [-1.15600158,  0.37557268, -1.65790000],  // C6
+  7:  [-0.71446884,  0.98332536,  1.65790000],  // C7 (top, rotated 36°)
+  8:  [ 1.15600158, -0.37557268,  1.65790000],  // C8
+  9:  [ 0.71441498,  0.98336450,  1.65790000],  // C9
+  10: [ 0.00003328, -1.21548117,  1.65790000],  // C10
+  11: [-1.15598101, -0.37563600,  1.65790000],  // C11
+  12: [-0.00006286,  2.29548118, -1.65830000],  // H12
+  13: [ 1.34930084, -1.85704633, -1.65830000],  // H13
+  14: [ 2.18311291,  0.70940248, -1.65830000],  // H14
+  15: [-1.34919913, -1.85712023, -1.65830000],  // H15
+  16: [-2.18315176,  0.70928291, -1.65830000],  // H16
+  17: [-1.34930084,  1.85704634,  1.65830000],  // H17
+  18: [ 2.18315176, -0.70928291,  1.65830000],  // H18
+  19: [ 1.34919913,  1.85712023,  1.65830000],  // H19
+  20: [ 0.00006286, -2.29548118,  1.65830000],  // H20
+  21: [-2.18311291, -0.70940248,  1.65830000]   // H21
+};
+
+// 交错构型内联模型加载脚本
+var ferroceneStaggeredBaseModel = `load data "ferrocene xyz"
+21
+ferrocene_staggered D5d
+Fe  0.00000000  0.00000000  0.00000000
+C  -0.00003329  1.21548118 -1.65790000
+C   0.71446884 -0.98332536 -1.65790000
+C   1.15598101  0.37563600 -1.65790000
+C  -0.71441498 -0.98336449 -1.65790000
+C  -1.15600158  0.37557268 -1.65790000
+C  -0.71446884  0.98332536  1.65790000
+C   1.15600158 -0.37557268  1.65790000
+C   0.71441498  0.98336450  1.65790000
+C   0.00003328 -1.21548117  1.65790000
+C  -1.15598101 -0.37563600  1.65790000
+H  -0.00006286  2.29548118 -1.65830000
+H   1.34930084 -1.85704633 -1.65830000
+H   2.18311291  0.70940248 -1.65830000
+H  -1.34919913 -1.85712023 -1.65830000
+H  -2.18315176  0.70928291 -1.65830000
+H  -1.34930084  1.85704634  1.65830000
+H   2.18315176 -0.70928291  1.65830000
+H   1.34919913  1.85712023  1.65830000
+H   0.00006286 -2.29548118  1.65830000
+H  -2.18311291 -0.70940248  1.65830000
+end "ferrocene xyz"
+
+set zoomlarge false;
+set antialiasDisplay;
+spacefill 23%;
+wireframe 0.15;
+color iron orange;
+color carbon gray;
+color hydrogen white;
+center;
+zoom 120;
+`;
+
+var ferroceneS10IntermediateAtoms = null;
+
+function setFerroceneS10Buttons(disabled, activeId) {
+  ['btnFerroceneS10Full','btnFerroceneS10Step1','btnFerroceneS10Step2','btnFerroceneInversion',
+   'btnFerSd1','btnFerSd2','btnFerSd3','btnFerSd4','btnFerSd5'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.disabled = disabled;
+    btn.classList.toggle('active', !!(activeId && id === activeId));
+  });
+}
+
+/**
+ * S10 完整操作：旋转36° + 上下反射，使用交错构型
+ */
+function playFerroceneS10Full() {
+  if (currentFile !== 'ferrocene.xyz' || isAnimating) return;
+  isAnimating = true;
+  ferroceneS10IntermediateAtoms = null;
+  setFerroceneS10Buttons(true, 'btnFerroceneS10Full');
+  document.getElementById('btnFerroceneS10Full').textContent = 'S₁₀ 动画播放中...';
+  const opStatus = document.getElementById('op-status');
+  opStatus.textContent = 'S₁₀ 操作：旋转36° + σₕ反射，正在播放...';
+  opStatus.classList.add('loading');
+
+  Jmol.script(myJmol, 'save orientation s10View;');
+  Jmol.script(myJmol, ferroceneStaggeredBaseModel + 'restore orientation s10View;');
+
+  const baseAtoms = ferroceneStaggeredAtoms;
+  const cos36 = Math.cos(Math.PI / 5);
+  const sin36 = Math.sin(Math.PI / 5);
+
+  // Step 1 target: rotate all atoms 36° about z-axis
+  const rotatedAtoms = {};
+  for (let i = 1; i <= 21; i++) {
+    const [x, y, z] = baseAtoms[i];
+    rotatedAtoms[i] = [x*cos36 - y*sin36, x*sin36 + y*cos36, z];
+  }
+  // Step 2 target: reflect z -> -z
+  const finalAtoms = {};
+  for (let i = 1; i <= 21; i++) {
+    const [x, y, z] = rotatedAtoms[i];
+    finalAtoms[i] = [x, y, -z];
+  }
+
+  const steps = 20;
+  const delay = 0.025;
+
+  function buildSwapScript(fromA, toA) {
+    let s = '';
+    for (let step = 0; step < steps; step++) {
+      for (let i = 1; i <= 21; i++) {
+        const dx = ((toA[i][0] - fromA[i][0]) / steps).toFixed(5);
+        const dy = ((toA[i][1] - fromA[i][1]) / steps).toFixed(5);
+        const dz = ((toA[i][2] - fromA[i][2]) / steps).toFixed(5);
+        s += `select atomno=${i}; translateSelected {${dx} ${dy} ${dz}};`;
+      }
+      s += `delay ${delay};`;
+    }
+    return s;
+  }
+
+  setTimeout(() => {
+    let script = 'set echo off;';
+    script += buildSwapScript(baseAtoms, rotatedAtoms);
+    script += `delay 0.3;`;
+    script += buildSwapScript(rotatedAtoms, finalAtoms);
+    script += `delay 0.4; background echo "S₁₀ = C₁₀ × σₕ 完成：旋转36° + 上下反射，恢复交错构型"; delay 0.8; background echo OFF;`;
+    Jmol.script(myJmol, script);
+
+    const totalTime = (steps * delay * 2 + 1.6) * 1000;
+    setTimeout(() => {
+      isAnimating = false;
+      setFerroceneS10Buttons(false, null);
+      document.getElementById('btnFerroceneS10Full').textContent = '▶ S₁₀ 完整操作（旋转36° + 反射）';
+      opStatus.classList.remove('loading');
+      opStatus.textContent = 'S₁₀ 操作完成';
+      setTimeout(() => { if (!isAnimating) opStatus.textContent = '可用操作: C₅, C₂'; }, 2500);
+    }, totalTime);
+  }, 500);
+}
+
+/**
+ * S10 第①步：旋转36°
+ */
+function playFerroceneS10Step1() {
+  if (currentFile !== 'ferrocene.xyz' || isAnimating) return;
+  isAnimating = true;
+  ferroceneS10IntermediateAtoms = null;
+  setFerroceneS10Buttons(true, 'btnFerroceneS10Step1');
+  document.getElementById('btnFerroceneS10Step1').textContent = '第①步 旋转中...';
+  const opStatus = document.getElementById('op-status');
+  opStatus.textContent = 'S₁₀ 第①步：绕主轴旋转 36°...';
+  opStatus.classList.add('loading');
+
+  Jmol.script(myJmol, 'save orientation s10View;');
+  Jmol.script(myJmol, ferroceneStaggeredBaseModel + 'restore orientation s10View;');
+
+  const baseAtoms = ferroceneStaggeredAtoms;
+  const cos36 = Math.cos(Math.PI / 5);
+  const sin36 = Math.sin(Math.PI / 5);
+
+  const rotatedAtoms = {};
+  for (let i = 1; i <= 21; i++) {
+    const [x, y, z] = baseAtoms[i];
+    rotatedAtoms[i] = [x*cos36 - y*sin36, x*sin36 + y*cos36, z];
+  }
+  ferroceneS10IntermediateAtoms = rotatedAtoms;
+
+  const steps = 24;
+  const delay = 0.025;
+
+  setTimeout(() => {
+    let script = 'set echo off;';
+    for (let step = 0; step < steps; step++) {
+      for (let i = 1; i <= 21; i++) {
+        const dx = ((rotatedAtoms[i][0] - baseAtoms[i][0]) / steps).toFixed(5);
+        const dy = ((rotatedAtoms[i][1] - baseAtoms[i][1]) / steps).toFixed(5);
+        const dz = ((rotatedAtoms[i][2] - baseAtoms[i][2]) / steps).toFixed(5);
+        script += `select atomno=${i}; translateSelected {${dx} ${dy} ${dz}};`;
+      }
+      script += `delay ${delay};`;
+    }
+    script += `delay 0.3; background echo "第①步完成：旋转36°（中间态）"; delay 0.8; background echo OFF;`;
+    Jmol.script(myJmol, script);
+
+    setTimeout(() => {
+      isAnimating = false;
+      setFerroceneS10Buttons(false, null);
+      document.getElementById('btnFerroceneS10Step1').textContent = '第①步：C₁₀ 旋转 36° ✓';
+      opStatus.classList.remove('loading');
+      opStatus.textContent = '第①步完成：已旋转36°，请继续点击第②步';
+    }, (steps * delay + 1.2) * 1000);
+  }, 500);
+}
+
+/**
+ * S10 第②步：σh 反射
+ */
+function playFerroceneS10Step2() {
+  if (currentFile !== 'ferrocene.xyz' || isAnimating) return;
+  if (!ferroceneS10IntermediateAtoms) {
+    showIdentityMessage(`
+      <div class="identity-dialog-title">请先执行第①步</div>
+      <div class="identity-dialog-body">
+        <p>请先点击 <strong>"第①步：C₁₀ 旋转 36°"</strong>，完成旋转后再点击第②步进行 σₕ 反射。</p>
+        <p style="margin-top:8px;color:#6b7280;">点击"确认"关闭提示。</p>
+      </div>
+    `);
+    return;
+  }
+  isAnimating = true;
+  setFerroceneS10Buttons(true, 'btnFerroceneS10Step2');
+  document.getElementById('btnFerroceneS10Step2').textContent = '第②步 反射中...';
+  const opStatus = document.getElementById('op-status');
+  opStatus.textContent = 'S₁₀ 第②步：σₕ 反射（z → -z）...';
+  opStatus.classList.add('loading');
+
+  // Build and load intermediate state model
+  const fromAtoms = ferroceneS10IntermediateAtoms;
+  let xyzLines = ['21', 'ferrocene_s10_intermediate'];
+  const elNames = ['Fe','C','C','C','C','C','C','C','C','C','C','H','H','H','H','H','H','H','H','H','H'];
+  for (let i = 1; i <= 21; i++) {
+    const [x, y, z] = fromAtoms[i];
+    xyzLines.push(`${elNames[i-1]}  ${x.toFixed(8)}  ${y.toFixed(8)}  ${z.toFixed(8)}`);
+  }
+  const intermediateModel = `load data "ferrocene xyz"\n${xyzLines.join('\n')}\nend "ferrocene xyz"\n\nset zoomlarge false;\nset antialiasDisplay;\nspacefill 23%;\nwireframe 0.15;\ncolor iron orange;\ncolor carbon gray;\ncolor hydrogen white;\ncenter;\nzoom 120;\n`;
+
+  Jmol.script(myJmol, 'save orientation s10View;');
+  Jmol.script(myJmol, intermediateModel + 'restore orientation s10View;');
+
+  const toAtoms = {};
+  for (let i = 1; i <= 21; i++) {
+    const [x, y, z] = fromAtoms[i];
+    toAtoms[i] = [x, y, -z];
+  }
+
+  const steps = 24;
+  const delay = 0.025;
+
+  setTimeout(() => {
+    let script = 'set echo off;';
+    for (let step = 0; step < steps; step++) {
+      for (let i = 1; i <= 21; i++) {
+        const dx = ((toAtoms[i][0] - fromAtoms[i][0]) / steps).toFixed(5);
+        const dy = ((toAtoms[i][1] - fromAtoms[i][1]) / steps).toFixed(5);
+        const dz = ((toAtoms[i][2] - fromAtoms[i][2]) / steps).toFixed(5);
+        script += `select atomno=${i}; translateSelected {${dx} ${dy} ${dz}};`;
+      }
+      script += `delay ${delay};`;
+    }
+    script += `delay 0.4; background echo "第②步完成：σₕ 反射 → 恢复交错构型！S₁₀ 完成"; delay 1.0; background echo OFF;`;
+    Jmol.script(myJmol, script);
+
+    setTimeout(() => {
+      isAnimating = false;
+      ferroceneS10IntermediateAtoms = null;
+      setFerroceneS10Buttons(false, null);
+      document.getElementById('btnFerroceneS10Step2').textContent = '第②步：σₕ 上下反射';
+      document.getElementById('btnFerroceneS10Step1').textContent = '第①步：C₁₀ 旋转 36°';
+      opStatus.classList.remove('loading');
+      opStatus.textContent = 'S₁₀ 全部完成！旋转36° + σₕ反射 = 恢复交错构型';
+      setTimeout(() => { if (!isAnimating) opStatus.textContent = '可用操作: C₅, C₂'; }, 3000);
+    }, (steps * delay + 1.5) * 1000);
+  }, 500);
+}
+
+/**
+ * 反演操作 i：每个原子通过铁原子到达对称位置
+ * 使用交错构型（D5d），反演是其真正的对称元素
+ */
+function playFerroceneInversion() {
+  if (currentFile !== 'ferrocene.xyz' || isAnimating) return;
+  isAnimating = true;
+  ferroceneS10IntermediateAtoms = null;
+  setFerroceneS10Buttons(true, 'btnFerroceneInversion');
+  document.getElementById('btnFerroceneInversion').textContent = '反演操作播放中...';
+  const opStatus = document.getElementById('op-status');
+  opStatus.textContent = '二茂铁反演操作 i：每个原子经铁原子到对称位置...';
+  opStatus.classList.add('loading');
+
+  Jmol.script(myJmol, 'save orientation invView;');
+  Jmol.script(myJmol, ferroceneStaggeredBaseModel + 'restore orientation invView;');
+
+  const baseAtoms = ferroceneStaggeredAtoms;
+  const steps = 20;
+  const delay = 0.025;
+
+  setTimeout(() => {
+    let script = 'set echo off; delay 0.2;';
+    for (let step = 0; step < steps; step++) {
+      for (let i = 1; i <= 21; i++) {
+        const [x, y, z] = baseAtoms[i];
+        // Move each atom from (x,y,z) to (-x,-y,-z)
+        const dx = (-2 * x / steps).toFixed(5);
+        const dy = (-2 * y / steps).toFixed(5);
+        const dz = (-2 * z / steps).toFixed(5);
+        script += `select atomno=${i}; translateSelected {${dx} ${dy} ${dz}};`;
+      }
+      script += `delay ${delay};`;
+    }
+    script += `delay 0.4; background echo "反演 i 完成：每个原子经铁原子中心映射至对称位置"; delay 0.8; background echo OFF;`;
+    Jmol.script(myJmol, script);
+
+    setTimeout(() => {
+      isAnimating = false;
+      setFerroceneS10Buttons(false, null);
+      document.getElementById('btnFerroceneInversion').textContent = '反演操作 i';
+      opStatus.classList.remove('loading');
+      opStatus.textContent = '反演操作 i 完成';
+      setTimeout(() => { if (!isAnimating) opStatus.textContent = '可用操作: C₅, C₂'; }, 2000);
+    }, (steps * delay + 1.3) * 1000);
+  }, 500);
+}
+
+// ================================================================
+// 原有功能
+// ================================================================
+
+function doCnWithReset(n) {
+  if (isAnimating) return;
+  isAnimating = true;
+  const opStatus = document.getElementById('op-status');
+  opStatus.textContent = `正在执行 C${n} 旋转（加速模式）...`;
+  opStatus.classList.add('loading');
+  Jmol.script(myJmol, "save orientation userView;");
+  if (currentFile === 'cyclohexane_chair.xyz') {
+    const baseScript = buildChairBaseScript();
+    Jmol.script(myJmol, baseScript + `
+      spin off;
+      calculate pointgroup;
+      draw pointgroup;
+      restore orientation userView;
+    `);
+  } else if (currentFile === 'h3c-ccl3.mol') {
+    Jmol.script(myJmol, ch3ccl3BaseModel + `
+      spin off;
+      calculate pointgroup;
+      draw pointgroup;
+      restore orientation userView;
+    `);
+  } else {
+    Jmol.script(myJmol, `
+      load ${currentFile}
+      center
+      zoom 120
+      spin off
+      calculate pointgroup
+      draw pointgroup
+      restore orientation userView;
+    `);
+  }
+  setTimeout(() => {
+    const angle = 360 / n;
+    Jmol.script(myJmol, `spin $pgva_0_c${n}_1 ${angle} 400`);
+    opStatus.textContent = `正在执行 C${n} 旋转（角度: ${angle}°，速度: 400）`;
+    setTimeout(() => {
+      isAnimating = false;
+      opStatus.classList.remove('loading');
+      opStatus.textContent = `可用操作: ${currentCn.map(n => 'C' + n).join(', ')}`;
+    }, 2000);
+  }, 400);
+}
+
+function playSigmaVxz() {
+  if (currentFile !== 'water.xyz' || isAnimating) return;
+  isAnimating = true;
+  const btn = document.getElementById("btnSigmaV");
+  btn.disabled = true;
+  btn.classList.add("active");
+  btn.textContent = "动画播放中...";
+  document.getElementById('op-status').textContent = "正在播放 σᵥ(xz) 反射动画（加速）...";
+  document.getElementById('op-status').classList.add('loading');
+  saveViewAndReset(h2oBaseModel);
+  let script = "set echo off; delay 0.2;";
+  const steps = 10;
+  const delayPerStep = 0.04;
+  const y0 = 0.757;
+  const dy = (-2 * y0) / steps;
+  for (let i = 0; i < steps; i++) {
+    script += `
+      select atomno=2; translateSelected {0 ${dy.toFixed(4)} 0};
+      select atomno=3; translateSelected {0 ${(-dy).toFixed(4)} 0};
+      delay ${delayPerStep};
+    `;
+  }
+  script += `
+    delay 0.3;
+    calculate pointgroup;
+    draw pointgroup;
+    spin off;
+    background echo "σᵥ(xz) 反射动画完成";
+    delay 0.6;
+    background echo OFF;
+  `;
+  Jmol.script(myJmol, script);
+  setTimeout(() => {
+    isAnimating = false;
+    btn.disabled = false;
+    btn.classList.remove("active");
+    btn.textContent = "播放 σᵥ(xz) 连续反射";
+    document.getElementById('op-status').classList.remove('loading');
+    document.getElementById('op-status').textContent = "σᵥ(xz) 动画完成，C₂ 操作已恢复";
+    setTimeout(() => {
+      document.getElementById('op-status').textContent = "可用操作: C₂";
+    }, 1500);
+  }, (steps * delayPerStep + 1.1) * 1000);
+}
+
+function playSigmaPrimeVyz() {
+  if (currentFile !== 'water.xyz' || isAnimating) return;
+  isAnimating = true;
+  const btn = document.getElementById("btnSigmaPrimeV");
+  btn.disabled = true;
+  btn.classList.add("active");
+  btn.textContent = "执行恒等操作...";
+  document.getElementById('op-status').classList.remove('loading');
+  document.getElementById('op-status').innerHTML = "σᵥ′(yz)：该平面是分子平面，所有原子都映射回自身 → 分子结构完全不变";
+  saveViewAndReset(h2oBaseModel);
+  const html = `
+    <div class="identity-dialog-title">σᵥ′(yz) 反射：恒等操作</div>
+    <div class="identity-dialog-body">
+      <p>水分子的 <strong>σᵥ′(yz)</strong> 是分子平面，O 和两 H 原子都位于该平面内。</p>
+      <p>在该平面反射下，<strong>每个原子都映射回自身</strong>，因此分子结构完全不变。</p>
+      <p style="margin-top:8px;color:#6b7280;">点击"确认"关闭本提示后，可以继续进行其它操作。</p>
+    </div>
+  `;
+  showIdentityMessage(html);
+  setTimeout(() => {
+    btn.disabled = false;
+    btn.classList.remove("active");
+    btn.textContent = "播放 σᵥ′(yz) 反射";
+  }, 300);
+}
+
+function playC2H2Cl2Inversion() {
+  if (currentFile !== 'C2H2Cl2.mol' || isAnimating) return;
+  isAnimating = true;
+  const btn = document.getElementById("btnC2H2Cl2Inversion");
+  btn.disabled = true;
+  btn.classList.add("active");
+  btn.textContent = "动画播放中...";
+  document.getElementById('op-status').textContent = "正在播放 C₂H₂Cl₂ 反演操作 i（加速）...";
+  document.getElementById('op-status').classList.add('loading');
+  saveViewAndReset(c2h2cl2BaseModel);
+  const atoms = [
+    {id:1, x: 2.1437,  y: 0.1015,  z:-0.0002},
+    {id:2, x:-2.1439,  y:-0.1011, z:-0.0002},
+    {id:3, x: 0.5135,  y:-0.4232, z: 0.0002},
+    {id:4, x:-0.5132,  y: 0.4227, z: 0.0002},
+    {id:5, x: 0.4242,  y:-1.5014, z: 0.0001},
+    {id:6, x:-0.4237,  y: 1.5009, z: 0.0001}
+  ];
+  const steps = 10;
+  const delayPerStep = 0.04;
+  let script = "set echo off; delay 0.2;";
+  for (let i = 0; i < steps; i++) {
+    atoms.forEach(a => {
+      script +=
+        "select atomno=" + a.id + ";" +
+        "translateSelected {" +
+        (-2*a.x/steps).toFixed(4) + " " +
+        (-2*a.y/steps).toFixed(4) + " " +
+        (-2*a.z/steps).toFixed(4) +
+        "};";
+    });
+    script += "delay " + delayPerStep + ";";
+  }
+  script += `
+    delay 0.3;
+    calculate pointgroup;
+    draw pointgroup;
+    spin off;
+    background echo "C₂H₂Cl₂ 反演操作 i 动画完成";
+    delay 0.6;
+    background echo OFF;
+  `;
+  Jmol.script(myJmol, script);
+  setTimeout(() => {
+    isAnimating = false;
+    btn.disabled = false;
+    btn.classList.remove("active");
+    btn.textContent = "播放反演操作 i";
+    document.getElementById('op-status').classList.remove('loading');
+    document.getElementById('op-status').textContent = "C₂H₂Cl₂ 反演操作 i 动画完成";
+    setTimeout(() => {
+      document.getElementById('op-status').textContent = "可用操作: C₂";
+    }, 1500);
+  }, (steps * delayPerStep + 1.1) * 1000);
+}
+
+function swapClKeepView(idA, idB, atomA, atomB) {
+  saveViewAndReset(chcl3BaseModel);
+  const steps = 10;
+  const delayPerStep = 0.04;
+  const dxA = (atomB.x - atomA.x) / steps;
+  const dyA = (atomB.y - atomA.y) / steps;
+  const dzA = (atomB.z - atomA.z) / steps;
+  const dxB = (atomA.x - atomB.x) / steps;
+  const dyB = (atomA.y - atomB.y) / steps;
+  const dzB = (atomA.z - atomB.z) / steps;
+  let script = "set echo off;";
+  for (let i = 0; i < steps; i++) {
+    script +=
+      "select atomno=" + idA + ";" +
+      "translateSelected {" + dxA.toFixed(4) + " " + dyA.toFixed(4) + " " + dzA.toFixed(4) + "};" +
+      "select atomno=" + idB + ";" +
+      "translateSelected {" + dxB.toFixed(4) + " " + dyB.toFixed(4) + " " + dzB.toFixed(4) + "};" +
+      "delay " + delayPerStep + ";";
+  }
+  script += `
+    delay 0.3;
+    calculate pointgroup;
+    draw pointgroup;
+    spin off;
+    background echo "CHCl₃ σᵥ 反射动画完成";
+    delay 0.6;
+    background echo OFF;
+  `;
+  Jmol.script(myJmol, script);
+}
+
+function playCHCl3SigmaV12() {
+  if (currentFile !== 'CHCl3.mol' || isAnimating) return;
+  isAnimating = true;
+  const btn = document.getElementById("btnSigmaV12");
+  btn.disabled = true; btn.classList.add("active"); btn.textContent = "动画播放中...";
+  document.getElementById('op-status').textContent = "正在播放 CHCl₃ σᵥ₁ 反射动画...";
+  document.getElementById('op-status').classList.add('loading');
+  swapClKeepView(1, 2,
+    {x:-0.0962, y:-1.6789, z:0.1394},
+    {x:-1.4059, y:0.9228, z:0.1394}
+  );
+  setTimeout(() => {
+    isAnimating = false;
+    btn.disabled = false; btn.classList.remove("active"); btn.textContent = "σᵥ₁（Cl1 ↔ Cl2）";
+    document.getElementById('op-status').classList.remove('loading');
+    document.getElementById('op-status').textContent = "CHCl₃ σᵥ₁ 反射完成";
+    setTimeout(() => { document.getElementById('op-status').textContent = "可用操作: C₃"; }, 1500);
+  }, 1500);
+}
+
+function playCHCl3SigmaV23() {
+  if (currentFile !== 'CHCl3.mol' || isAnimating) return;
+  isAnimating = true;
+  const btn = document.getElementById("btnSigmaV23");
+  btn.disabled = true; btn.classList.add("active"); btn.textContent = "动画播放中...";
+  document.getElementById('op-status').textContent = "正在播放 CHCl₃ σᵥ₂ 反射动画...";
+  document.getElementById('op-status').classList.add('loading');
+  swapClKeepView(2, 3,
+    {x:-1.4059, y:0.9228, z:0.1394},
+    {x:1.5022, y:0.7561, z:0.1393}
+  );
+  setTimeout(() => {
+    isAnimating = false;
+    btn.disabled = false; btn.classList.remove("active"); btn.textContent = "σᵥ₂（Cl2 ↔ Cl3）";
+    document.getElementById('op-status').classList.remove('loading');
+    document.getElementById('op-status').textContent = "CHCl₃ σᵥ₂ 反射完成";
+    setTimeout(() => { document.getElementById('op-status').textContent = "可用操作: C₃"; }, 1500);
+  }, 1500);
+}
+
+function playCHCl3SigmaV31() {
+  if (currentFile !== 'CHCl3.mol' || isAnimating) return;
+  isAnimating = true;
+  const btn = document.getElementById("btnSigmaV31");
+  btn.disabled = true; btn.classList.add("active"); btn.textContent = "动画播放中...";
+  document.getElementById('op-status').textContent = "正在播放 CHCl₃ σᵥ₃ 反射动画...";
+  document.getElementById('op-status').classList.add('loading');
+  swapClKeepView(3, 1,
+    {x:1.5022, y:0.7561, z:0.1393},
+    {x:-0.0962, y:-1.6789, z:0.1394}
+  );
+  setTimeout(() => {
+    isAnimating = false;
+    btn.disabled = false; btn.classList.remove("active"); btn.textContent = "σᵥ₃（Cl3 ↔ Cl1）";
+    document.getElementById('op-status').classList.remove('loading');
+    document.getElementById('op-status').textContent = "CHCl₃ σᵥ₃ 反射完成";
+    setTimeout(() => { document.getElementById('op-status').textContent = "可用操作: C₃"; }, 1500);
+  }, 1500);
+}
+
+// ================================================================
+// CO₂ C₂′(∞) 旋转动画
+// D∞h 有无穷多条 C₂′ 轴，均垂直于主轴(x)且过分子中心(C原子)。
+// 三次点击分别演示三个方向不同的 C₂′ 轴，之后循环：
+//   第1次：C₂′(y)  — 旋转轴沿 y 方向，两 O 原子在 xz 平面弧线运动（穿越 ±z）
+//   第2次：C₂′(z)  — 旋转轴沿 z 方向，两 O 原子在 xy 平面弧线运动（穿越 ±y）
+//   第3次：C₂′(yz 45°) — 旋转轴在 yz 平面 45° 方向，O 原子走对角线弧
+// 终态：O1↔O2 互换，C 始终不动（在旋转轴上）。
+// 用 translateSelected 逐帧沿正弦弧驱动，完整还原旋转路径。
+// ================================================================
+
+var co2C2primeClickCount = 0;   // 0-based, mod 3 to get click index
+
+// 预计算三套弧线增量（24步，每步 δx δy δz）
+// 用 Rodrigues 公式：旋转轴 n=(0,ny,nz)，v=(-1.197,0,0) or (1.197,0,0)
+// v'(α) = v cosα + (n×v) sinα   (因 n·v=0)
+// n×(-1.197,0,0) = (0, -nz*(-1.197)*(-1), +(-1.197)*nz... let me use exact formula below)
+// For O1 at (-r,0,0): arc x=-r cosα, y=nz*(-r)*(-1)*sinα... 
+// verified numerically above; using precomputed deltas directly.
+
+(function buildCo2C2primeDeltas() {
+  // Parametric arc: O1 starts at (-r,0,0)
+  // axis (0,ny,nz): x'=-r cosα, y'= nz*r sinα (wait - let me redo sign carefully)
+  // n×v where v=(-r,0,0), n=(0,ny,nz):
+  //   n×v = (ny*0 - nz*0,  nz*(-r) - 0*0,  0*0 - ny*(-r))
+  //       = (0, -nz*r, ny*r)
+  // So arc for O1: (x,y,z) = (-r cosα, -nz*r sinα, ny*r sinα)
+  const r = 1.197;
+  const steps = 24;
+  const axes = [
+    {ny:1, nz:0, label:"y"},
+    {ny:0, nz:1, label:"z"},
+    {ny:1/Math.sqrt(2), nz:1/Math.sqrt(2), label:"yz45°"}
+  ];
+
+  window.co2C2primeData = axes.map(({ny, nz, label}) => {
+    const deltasO1 = [], deltasO2 = [];
+    for (let k = 0; k < steps; k++) {
+      const a0 = Math.PI * k / steps;
+      const a1 = Math.PI * (k+1) / steps;
+      // O1 position at step
+      const x0 = -r * Math.cos(a0), y0 = -nz*r*Math.sin(a0), z0 =  ny*r*Math.sin(a0);
+      const x1 = -r * Math.cos(a1), y1 = -nz*r*Math.sin(a1), z1 =  ny*r*Math.sin(a1);
+      deltasO1.push([x1-x0, y1-y0, z1-z0]);
+      // O2 is exactly opposite: (r cosα, nz*r sinα, -ny*r sinα)
+      const x0b =  r * Math.cos(a0), y0b =  nz*r*Math.sin(a0), z0b = -ny*r*Math.sin(a0);
+      const x1b =  r * Math.cos(a1), y1b =  nz*r*Math.sin(a1), z1b = -ny*r*Math.sin(a1);
+      deltasO2.push([x1b-x0b, y1b-y0b, z1b-z0b]);
+    }
+    return {label, deltasO1, deltasO2};
+  });
+})();
+
+function playCo2C2prime() {
+  if (currentFile !== 'CO2.mol' || isAnimating) return;
+  isAnimating = true;
+
+  const clickIdx = co2C2primeClickCount % 3;  // 0,1,2 循环
+  co2C2primeClickCount++;
+
+  const axisLabels  = ['y 轴', 'z 轴', 'yz 平面 45°'];
+  const axisSymbols = ['C₂′(y)', 'C₂′(z)', 'C₂′(yz,45°)'];
+  const arcDescriptions = [
+    'O 原子沿 xz 平面弧线运动',
+    'O 原子沿 xy 平面弧线运动',
+    'O 原子沿 yz 斜面弧线运动'
+  ];
+
+  const label  = axisLabels[clickIdx];
+  const symbol = axisSymbols[clickIdx];
+  const arcDesc = arcDescriptions[clickIdx];
+
+  const btn = document.getElementById('btnCo2C2prime');
+  btn.disabled = true;
+  btn.textContent = `${symbol} 动画中...`;
+
+  const opStatus = document.getElementById('op-status');
+  opStatus.textContent = `CO₂ ${symbol}：旋转轴沿 ${label}，${arcDesc}`;
+  opStatus.classList.add('loading');
+
+  // 重置到标准模型，保留视角
+  Jmol.script(myJmol, 'save orientation co2View;');
+  Jmol.script(myJmol, co2BaseModel + 'restore orientation co2View;');
+
+  const {deltasO1, deltasO2} = window.co2C2primeData[clickIdx];
+  const steps = 24;
+  const delayPerStep = 0.025;
+
+  setTimeout(() => {
+    let script = 'set echo off; delay 0.15;';
+    for (let k = 0; k < steps; k++) {
+      const [dx1, dy1, dz1] = deltasO1[k];
+      const [dx2, dy2, dz2] = deltasO2[k];
+      script += `select atomno=1; translateSelected {${dx1.toFixed(5)} ${dy1.toFixed(5)} ${dz1.toFixed(5)}};`;
+      script += `select atomno=2; translateSelected {${dx2.toFixed(5)} ${dy2.toFixed(5)} ${dz2.toFixed(5)}};`;
+      script += `delay ${delayPerStep};`;
+    }
+
+    const remaining = 3 - (co2C2primeClickCount % 3 === 0 ? 3 : co2C2primeClickCount % 3);
+    const nextHint = co2C2primeClickCount % 3 === 0
+      ? '（已演示3种，再次点击从头循环）'
+      : `（再点击 ${remaining} 次可看其余演示）`;
+
+    script += `delay 0.3;`;
+    script += `background echo "${symbol} 完成：两 O 互换，C 不动${nextHint}";`;
+    script += `delay 1.0; background echo OFF;`;
+    Jmol.script(myJmol, script);
+
+    const totalTime = (steps * delayPerStep + 1.5) * 1000;
+    setTimeout(() => {
+      isAnimating = false;
+      // 更新按钮文字，提示下一次将演示哪个轴
+      const nextIdx = co2C2primeClickCount % 3;
+      const nextSymbol = axisSymbols[nextIdx];
+      btn.disabled = false;
+      btn.textContent = `C₂′(∞) → ${nextSymbol}`;
+      opStatus.classList.remove('loading');
+      opStatus.textContent = `${symbol} 完成 | 下次点击：${nextSymbol}`;
+      setTimeout(() => {
+        if (!isAnimating) opStatus.textContent = '可用操作: C₂, C₂′(∞)';
+      }, 2500);
+    }, totalTime);
+  }, 400);
+}
+
+function playInversion() {
+  if (currentFile !== 'CO2.mol' || isAnimating) return;
+  isAnimating = true;
+  const btn = document.getElementById("btnInversion");
+  btn.disabled = true; btn.classList.add("active"); btn.textContent = "动画播放中...";
+  document.getElementById('op-status').textContent = "正在播放 CO₂ 反演操作 i...";
+  document.getElementById('op-status').classList.add('loading');
+  saveViewAndReset(co2BaseModel);
+  const x0 = 1.197;
+  const steps = 20;
+  const delayPerStep = 0.03;
+  const dx = (-2 * x0) / steps;
+  let script = "set echo off; delay 0.2;";
+  for (let i = 0; i < steps; i++) {
+    script += `
+      select atomno=1; translateSelected {${(-dx).toFixed(4)} 0 0};
+      select atomno=2; translateSelected {${dx.toFixed(4)} 0 0};
+      delay ${delayPerStep};
+    `;
+  }
+  script += `
+    delay 0.3;
+    calculate pointgroup;
+    draw pointgroup;
+    spin off;
+    background echo "CO₂ 反演 i 完成";
+    delay 0.6;
+    background echo OFF;
+  `;
+  Jmol.script(myJmol, script);
+  setTimeout(() => {
+    isAnimating = false;
+    btn.disabled = false; btn.classList.remove("active"); btn.textContent = "播放反演操作 i";
+    document.getElementById('op-status').classList.remove('loading');
+    document.getElementById('op-status').textContent = "反演操作完成";
+    setTimeout(() => { document.getElementById('op-status').textContent = "可用操作: C₂"; }, 1500);
+  }, (steps * delayPerStep + 1.2) * 1000);
+}
+
+function doEthyleneC2(index) {
+  if (isAnimating || currentFile !== 'H2C=CH2.mol') return;
+  isAnimating = true;
+  const axisName = `$pgva_0_c2_${index}`;
+  const opStatus = document.getElementById('op-status');
+  opStatus.textContent = `正在执行 ${axisName} 的 C₂ 旋转...`;
+  opStatus.classList.add('loading');
+  Jmol.script(myJmol, "save orientation userView;");
+  Jmol.script(myJmol, `
+    load ${currentFile}
     center
     zoom 120
     spin off
     calculate pointgroup
     draw pointgroup
+    restore orientation userView
   `);
-
-  updateButtons(false);
+  setTimeout(() => {
+    Jmol.script(myJmol, `spin ${axisName} 180 200`);
+    setTimeout(() => {
+      isAnimating = false;
+      opStatus.classList.remove('loading');
+      opStatus.textContent = "乙烯 D₂h：C₂ 轴旋转演示完成";
+    }, 1800);
+  }, 400);
 }
 
-/* ========= 更新按钮 ========= */
-function updateButtons(isWater) {
-
-  [2,3,4,5,6].forEach(n => {
-    document.getElementById("btnC"+n).classList.add("hidden");
-  });
-
-  currentCn.forEach(n => {
-    document.getElementById("btnC"+n).classList.remove("hidden");
-  });
-
-  document.getElementById("btnSigma")
-    .classList.toggle("hidden", !isWater);
-
-  document.getElementById("btnSigmaYZ")
-    .classList.toggle("hidden", !isWater);
+function playEthyleneInversion() {
+  if (currentFile !== 'H2C=CH2.mol' || isAnimating) return;
+  isAnimating = true;
+  const opStatus = document.getElementById('op-status');
+  opStatus.textContent = "正在播放乙烯反演操作 i...";
+  opStatus.classList.add('loading');
+  Jmol.script(myJmol, "save orientation userView;");
+  Jmol.script(myJmol, ethyleneBaseModel + "restore orientation userView;");
+  const atoms = [
+    [-0.6672,  0.0000,  0.0000],
+    [ 0.6672,  0.0000,  0.0000],
+    [-1.2213, -0.9290,  0.0708],
+    [-1.2212,  0.9290, -0.0708],
+    [ 1.2213,  0.9290, -0.0708],
+    [ 1.2213, -0.9290,  0.0708]
+  ];
+  const steps = 20;
+  const delay = 0.02;
+  let script = "set echo off; delay 0.2;";
+  for (let i = 0; i < steps; i++) {
+    for (let a = 0; a < atoms.length; a++) {
+      const dx = (-2 * atoms[a][0] / steps).toFixed(4);
+      const dy = (-2 * atoms[a][1] / steps).toFixed(4);
+      const dz = (-2 * atoms[a][2] / steps).toFixed(4);
+      script += `select atomno=${a + 1}; translateSelected {${dx} ${dy} ${dz}};`;
+    }
+    script += `delay ${delay};`;
+  }
+  script += `
+    delay 0.3;
+    calculate pointgroup;
+    draw pointgroup;
+    spin off;
+    background echo "乙烯反演 i 完成";
+    delay 0.6;
+    background echo OFF;
+  `;
+  Jmol.script(myJmol, script);
+  setTimeout(() => {
+    isAnimating = false;
+    opStatus.classList.remove('loading');
+    opStatus.textContent = "乙烯反演操作 i 动画完成";
+    setTimeout(() => { opStatus.textContent = "可用操作: C₂"; }, 1500);
+  }, (steps * delay + 1.2) * 1000);
 }
 
-/* ========= Cn ========= */
-function doCn(n) {
-  var angle = 360 / n;
-  Jmol.script(applet, `
-    spin $pgva_0_c${n}_1 ${angle} 60
-  `);
-}
-
-/* ========= σᵥ(xz)：H ↔ H ========= */
-function sigma_v_xz() {
-
-  Jmol.script(applet, waterBaseModel);
-
-  var y0 = 0.757;
-  var steps = 40;
-  var dy = (-2 * y0) / steps;
-
-  var script = "";
-
-  for (var i = 0; i < steps; i++) {
+function playEthyleneSigmaXz() {
+  if (currentFile !== 'H2C=CH2.mol' || isAnimating) return;
+  isAnimating = true;
+  const opStatus = document.getElementById('op-status');
+  opStatus.textContent = "正在播放乙烯 σ(xz) 镜面反射动画...";
+  opStatus.classList.add('loading');
+  Jmol.script(myJmol, "save orientation userView;");
+  Jmol.script(myJmol, ethyleneBaseModel + "restore orientation userView;");
+  const steps = 20;
+  const delay = 0.02;
+  const dy_up = (-2 * 0.9290 / steps).toFixed(4);
+  const dy_dn = ( 2 * 0.9290 / steps).toFixed(4);
+  let script = "set echo off; delay 0.2;";
+  for (let i = 0; i < steps; i++) {
     script += `
-      select atomno=2;
-      translateSelected {0 ${dy.toFixed(4)} 0};
-      select atomno=3;
-      translateSelected {0 ${(-dy).toFixed(4)} 0};
-      delay 0.05;
+      select atomno=4 or atomno=5; translateSelected {0 ${dy_up} 0};
+      select atomno=3 or atomno=6; translateSelected {0 ${dy_dn} 0};
+      delay ${delay};
     `;
   }
-
-  Jmol.script(applet, script);
+  script += `
+    delay 0.3;
+    calculate pointgroup;
+    draw pointgroup;
+    spin off;
+    background echo "乙烯 σ(xz) 镜面反射动画完成";
+    delay 0.6;
+    background echo OFF;
+  `;
+  Jmol.script(myJmol, script);
+  setTimeout(() => {
+    isAnimating = false;
+    opStatus.classList.remove('loading');
+    opStatus.textContent = "乙烯 σ(xz) 镜面反射完成";
+    setTimeout(() => { opStatus.textContent = "可用操作: C₂"; }, 1500);
+  }, (steps * delay + 1.2) * 1000);
 }
 
-/* ========= σᵥ(yz)：恒等操作 ========= */
-function sigma_v_yz() {
-  alert(
-    "σᵥ(yz) 是 H₂O 的分子平面。\n\n" +
-    "所有原子都位于 x = 0，\n" +
-    "反射后与原构型完全相同，\n" +
-    "因此分子保持不变（等价于恒等操作 E）。"
+function playEthyleneSigmaYz() {
+  if (currentFile !== 'H2C=CH2.mol' || isAnimating) return;
+  isAnimating = true;
+  const opStatus = document.getElementById('op-status');
+  opStatus.textContent = "正在播放乙烯 σ(yz) 镜面反射动画...";
+  opStatus.classList.add('loading');
+  Jmol.script(myJmol, "save orientation userView;");
+  Jmol.script(myJmol, ethyleneBaseModel + "restore orientation userView;");
+  const steps = 20;
+  const delay = 0.02;
+  const xC = 0.6672;
+  const dxC = (-2 * xC) / steps;
+  const xH = 1.2213;
+  const dxH = (-2 * xH) / steps;
+  let script = "set echo off; delay 0.2;";
+  for (let i = 0; i < steps; i++) {
+    script += `
+      select atomno=1; translateSelected {${(-dxC).toFixed(4)} 0 0};
+      select atomno=2; translateSelected {${dxC.toFixed(4)} 0 0};
+      select atomno=3 or atomno=4; translateSelected {${(-dxH).toFixed(4)} 0 0};
+      select atomno=5 or atomno=6; translateSelected {${dxH.toFixed(4)} 0 0};
+      delay ${delay};
+    `;
+  }
+  script += `
+    delay 0.3;
+    calculate pointgroup;
+    draw pointgroup;
+    spin off;
+    background echo "乙烯 σ(yz) 镜面反射动画完成";
+    delay 0.6;
+    background echo OFF;
+  `;
+  Jmol.script(myJmol, script);
+  setTimeout(() => {
+    isAnimating = false;
+    opStatus.classList.remove('loading');
+    opStatus.textContent = "乙烯 σ(yz) 镜面反射完成";
+    setTimeout(() => { opStatus.textContent = "可用操作: C₂"; }, 1500);
+  }, (steps * delay + 1.2) * 1000);
+}
+
+/* ================================================================
+   乙烯 σ(xy) 镜面反射 —— 恒等操作提示
+   乙烯为平面分子（分子平面 = xy 平面），σ(xy) 将所有原子映射回自身。
+   ================================================================ */
+function playEthyleneSigmaXy() {
+  if (currentFile !== 'H2C=CH2.mol' || isAnimating) return;
+  isAnimating = true;
+  const opStatus = document.getElementById('op-status');
+  opStatus.classList.remove('loading');
+  opStatus.textContent = "σ(xy)：乙烯分子平面，所有原子均在该平面内 → 反射后完全不变";
+
+  Jmol.script(myJmol, "save orientation userView;");
+  Jmol.script(myJmol, ethyleneBaseModel + "restore orientation userView;");
+
+  const html = `
+    <div class="identity-dialog-title">σ(xy) 反射：恒等操作</div>
+    <div class="identity-dialog-body">
+      <p>乙烯（H₂C=CH₂）是平面分子，所有 C 和 H 原子均位于 <strong>xy 平面</strong>（即分子平面）内。</p>
+      <p><strong>σ(xy)</strong> 是该分子平面的镜面反射。由于每个原子都在平面内，反射后<strong>每个原子都映射回自身</strong>，分子的外观与结构完全不变。</p>
+      <p>这是 D₂h 点群中的水平镜面 <strong>σₕ</strong>，是一个<strong>恒等操作</strong>。</p>
+      <p style="margin-top:8px;color:#6b7280;">点击"确认"关闭本提示后，可以继续进行其它操作。</p>
+    </div>
+  `;
+  showIdentityMessage(html);
+}
+
+/* BF₃ σ 反射动画 */
+function swapFKeepView(idA, idB, A, B) {
+  Jmol.script(myJmol, "save orientation myView;");
+  Jmol.scriptWait(myJmol, bf3BaseModel + "restore orientation myView;");
+  var steps = 20;
+  var dxA = (B.x - A.x) / steps;
+  var dyA = (B.y - A.y) / steps;
+  var dzA = (B.z - A.z) / steps;
+  var dxB = (A.x - B.x) / steps;
+  var dyB = (A.y - B.y) / steps;
+  var dzB = (A.z - B.z) / steps;
+  var script = "set echo off;";
+  for (var i = 0; i < steps; i++) {
+    script +=
+      "select atomno=" + idA + ";" +
+      "translateSelected {" + dxA.toFixed(4) + " " + dyA.toFixed(4) + " " + dzA.toFixed(4) + "};" +
+      "select atomno=" + idB + ";" +
+      "translateSelected {" + dxB.toFixed(4) + " " + dyB.toFixed(4) + " " + dzB.toFixed(4) + "};" +
+      "delay 0.005;";
+  }
+  Jmol.script(myJmol, script);
+}
+
+function setBF3Buttons(disabled, activeId) {
+  const ids = ["btnBF3C2_1","btnBF3C2_2","btnBF3C2_3","btnBF3S3","btnBF3SigmaV1","btnBF3SigmaV2","btnBF3SigmaV3","btnBF3SigmaH"];
+  ids.forEach(id => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.disabled = disabled;
+    btn.classList.toggle("active", activeId && id === activeId);
+  });
+}
+
+/* ================================================================
+   BF₃ 三条 C₂′ 旋转轴动画（参考乙烯 C₂ 实现）
+   原子编号：1=F1(-1.1865,0.685), 2=B(0,0), 3=F2(1.1865,0.685), 4=F3(0,-1.37)
+   C₂′₁（过B和F1）：F2(3) ↔ F3(4)
+   C₂′₂（过B和F2）：F1(1) ↔ F3(4)
+   C₂′₃（过B和F3）：F1(1) ↔ F2(3)
+   ================================================================ */
+
+// BF3 C2 旋转：使用 Jmol spin 命令，与乙烯保持一致风格
+function doBF3C2(index) {
+  if (currentFile !== 'BF3.mol' || isAnimating) return;
+  isAnimating = true;
+  setBF3Buttons(true, `btnBF3C2_${index}`);
+  const btnId = `btnBF3C2_${index}`;
+  const btn = document.getElementById(btnId);
+  const origText = btn.textContent;
+  btn.textContent = `C₂′${index} 旋转中...`;
+  const opStatus = document.getElementById('op-status');
+  opStatus.textContent = `BF₃：正在执行 C₂′${index} 旋转（180°）...`;
+  opStatus.classList.add('loading');
+
+  Jmol.script(myJmol, "save orientation userView;");
+  Jmol.scriptWait(myJmol, bf3BaseModel + "restore orientation userView;");
+  // BF3 D3h: Jmol labels C2 axes as pgva_0_c2_1, pgva_0_c2_2, pgva_0_c2_3
+  setTimeout(() => {
+    Jmol.script(myJmol, `calculate pointgroup; draw pointgroup; spin $pgva_0_c2_${index} 180 300`);
+    opStatus.textContent = `BF₃ C₂′${index} 旋转（180°）演示中...`;
+    setTimeout(() => {
+      isAnimating = false;
+      setBF3Buttons(false, null);
+      btn.textContent = origText;
+      opStatus.classList.remove('loading');
+      opStatus.textContent = `BF₃ C₂′${index} 旋转完成`;
+      setTimeout(() => { opStatus.textContent = '可用操作: C₃'; }, 1500);
+    }, 2200);
+  }, 400);
+}
+
+/* ================================================================
+   BF₃ S₃ 旋转反射动画
+   S₃ = C₃(120°) + σₕ。对平面 BF₃，σₕ 为分子平面，所有原子的 z ≈ 0，
+   故 σₕ 后 z 坐标仅微小翻转，视觉效果等同纯粹的 120° 旋转。
+   使用 translateSelected 动画，明确展示原子路径。
+   ================================================================ */
+function doBF3S3() {
+  if (currentFile !== 'BF3.mol' || isAnimating) return;
+  isAnimating = true;
+  setBF3Buttons(true, 'btnBF3S3');
+  const btn = document.getElementById('btnBF3S3');
+  btn.textContent = 'S₃ 动画播放中...';
+  const opStatus = document.getElementById('op-status');
+  opStatus.textContent = 'BF₃ S₃：旋转120° + σₕ反射，正在播放...';
+  opStatus.classList.add('loading');
+
+  Jmol.script(myJmol, "save orientation myView;");
+  Jmol.scriptWait(myJmol, bf3BaseModel + "restore orientation myView;");
+
+  // BF3 atoms: 1=F1, 2=B, 3=F2, 4=F3
+  const bf3Atoms = {
+    1: [-1.1865,  0.6850,  0.0003],
+    2: [ 0.0000,  0.0000, -0.0016],
+    3: [ 1.1865,  0.6850,  0.0003],
+    4: [ 0.0000, -1.3700,  0.0003],
+  };
+  const cos120 = Math.cos(2 * Math.PI / 3);
+  const sin120 = Math.sin(2 * Math.PI / 3);
+
+  // S3 target: rotate 120° then σh (z -> -z)
+  const s3Targets = {};
+  for (let i = 1; i <= 4; i++) {
+    const [x, y, z] = bf3Atoms[i];
+    const xr = x * cos120 - y * sin120;
+    const yr = x * sin120 + y * cos120;
+    s3Targets[i] = [xr, yr, -z];
+  }
+
+  const steps = 20;
+  const delay = 0.025;
+  setTimeout(() => {
+    let script = 'set echo off; delay 0.15;';
+    for (let step = 0; step < steps; step++) {
+      for (let i = 1; i <= 4; i++) {
+        const [fx, fy, fz] = s3Targets[i];
+        const [sx, sy, sz] = bf3Atoms[i];
+        const dx = ((fx - sx) / steps).toFixed(5);
+        const dy = ((fy - sy) / steps).toFixed(5);
+        const dz = ((fz - sz) / steps).toFixed(5);
+        script += `select atomno=${i}; translateSelected {${dx} ${dy} ${dz}};`;
+      }
+      script += `delay ${delay};`;
+    }
+    script += `delay 0.3; background echo "S₃ = C₃ × σₕ 完成（视觉效果等同 C₃ 旋转120°）"; delay 0.8; background echo OFF;`;
+    Jmol.script(myJmol, script);
+
+    setTimeout(() => {
+      isAnimating = false;
+      setBF3Buttons(false, null);
+      btn.textContent = 'S₃（旋转120° + σₕ，效果同 C₃）';
+      opStatus.classList.remove('loading');
+      opStatus.textContent = 'BF₃ S₃ 操作完成';
+      setTimeout(() => { opStatus.textContent = '可用操作: C₃'; }, 1500);
+    }, (steps * delay + 1.2) * 1000);
+  }, 400);
+}
+
+function sigmaV1() {
+  if (currentFile !== 'BF3.mol' || isAnimating) return;
+  isAnimating = true;
+  setBF3Buttons(true, "btnBF3SigmaV1");
+  document.getElementById("btnBF3SigmaV1").textContent = "σᵥ₁ 动画中...";
+  document.getElementById('op-status').textContent = "BF₃：正在执行 σᵥ₁ 反射...";
+  document.getElementById('op-status').classList.add('loading');
+  swapFKeepView(1, 3,
+    {x:-1.1865, y: 0.6850, z:0.0003},
+    {x: 1.1865, y: 0.6850, z:0.0003}
   );
+  setTimeout(() => {
+    isAnimating = false;
+    setBF3Buttons(false, null);
+    document.getElementById("btnBF3SigmaV1").textContent = "σᵥ₁ 反射";
+    document.getElementById('op-status').classList.remove('loading');
+    document.getElementById('op-status').textContent = "BF₃ σᵥ₁ 反射完成";
+  }, 1000);
 }
+
+function sigmaV2() {
+  if (currentFile !== 'BF3.mol' || isAnimating) return;
+  isAnimating = true;
+  setBF3Buttons(true, "btnBF3SigmaV2");
+  document.getElementById("btnBF3SigmaV2").textContent = "σᵥ₂ 动画中...";
+  document.getElementById('op-status').textContent = "BF₃：正在执行 σᵥ₂ 反射...";
+  document.getElementById('op-status').classList.add('loading');
+  swapFKeepView(3, 4,
+    {x: 1.1865, y: 0.6850, z:0.0003},
+    {x: 0.0000, y:-1.3700, z:0.0003}
+  );
+  setTimeout(() => {
+    isAnimating = false;
+    setBF3Buttons(false, null);
+    document.getElementById("btnBF3SigmaV2").textContent = "σᵥ₂ 反射";
+    document.getElementById('op-status').classList.remove('loading');
+    document.getElementById('op-status').textContent = "BF₃ σᵥ₂ 反射完成";
+  }, 1000);
+}
+
+function sigmaV3() {
+  if (currentFile !== 'BF3.mol' || isAnimating) return;
+  isAnimating = true;
+  setBF3Buttons(true, "btnBF3SigmaV3");
+  document.getElementById("btnBF3SigmaV3").textContent = "σᵥ₃ 动画中...";
+  document.getElementById('op-status').textContent = "BF₃：正在执行 σᵥ₃ 反射...";
+  document.getElementById('op-status').classList.add('loading');
+  swapFKeepView(4, 1,
+    {x: 0.0000, y:-1.3700, z:0.0003},
+    {x:-1.1865, y: 0.6850, z:0.0003}
+  );
+  setTimeout(() => {
+    isAnimating = false;
+    setBF3Buttons(false, null);
+    document.getElementById("btnBF3SigmaV3").textContent = "σᵥ₃ 反射";
+    document.getElementById('op-status').classList.remove('loading');
+    document.getElementById('op-status').textContent = "BF₃ σᵥ₃ 反射完成";
+  }, 1000);
+}
+
+function sigmaH() {
+  if (currentFile !== 'BF3.mol' || isAnimating) return;
+  isAnimating = true;
+  setBF3Buttons(true, "btnBF3SigmaH");
+  const btn = document.getElementById("btnBF3SigmaH");
+  btn.textContent = "σₕ（恒等操作）...";
+  const opStatus = document.getElementById('op-status');
+  opStatus.classList.remove('loading');
+  opStatus.textContent = "BF₃：σₕ 为分子平面，所有原子都在该平面内 → 反射后完全不变";
+  const html = `
+    <div class="identity-dialog-title">BF₃ 的 σₕ：恒等操作</div>
+    <div class="identity-dialog-body">
+      <p><strong>σₕ</strong> 是 BF₃ 的分子平面，B 与三个 F 原子全部在该平面内。</p>
+      <p>在该平面反射下，<strong>每个原子都映射回自身</strong>，分子外观完全不变。</p>
+      <p style="margin-top:8px;color:#6b7280;">点击"确认"关闭本提示后，可以继续进行其它操作。</p>
+    </div>
+  `;
+  showIdentityMessage(html);
+  setTimeout(() => {
+    setBF3Buttons(false, null);
+    btn.textContent = "σₕ 反射（不改变）";
+  }, 300);
+}
+
+// ================================================================
+// 二茂铁 5 个 σd 二面镜面动画（交错构型 D5d）
+// σd 平面含 C₅(z)轴，垂直于环平面，平分相邻两 C₂ 轴夹角。
+// 每次操作：分子关于该镜面对称的两半互相交换，Fe 及镜面内原子不动。
+//
+// 平面方向（与 x 轴夹角）及对应原子互换对：
+//   σd₁  54°: [[2,4],[3,6],[7,8],[10,11],[12,14],[13,16],[17,18],[20,21]]  固定：Fe(1),C5,C9,H15,H19
+//   σd₂ 126°: [[2,6],[4,5],[8,10],[9,11],[12,16],[14,15],[18,20],[19,21]]  固定：Fe(1),C3,C7,H13,H17
+//   σd₃ 198°: [[2,3],[5,6],[7,10],[8,9],[12,13],[15,16],[17,20],[18,19]]   固定：Fe(1),C4,C11,H14,H21
+//   σd₄ 270°: [[3,5],[4,6],[7,9],[8,11],[13,15],[14,16],[17,19],[18,21]]   固定：Fe(1),C2,C10,H12,H20
+//   σd₅ 342°: [[2,5],[3,4],[7,11],[9,10],[12,15],[13,14],[17,21],[19,20]]  固定：Fe(1),C6,C8,H16,H18
+// ================================================================
+
+var ferroceneSdSwaps = {
+  1: [[2,4],[3,6],[7,8],[10,11],[12,14],[13,16],[17,18],[20,21]],
+  2: [[2,6],[4,5],[8,10],[9,11],[12,16],[14,15],[18,20],[19,21]],
+  3: [[2,3],[5,6],[7,10],[8,9],[12,13],[15,16],[17,20],[18,19]],
+  4: [[3,5],[4,6],[7,9],[8,11],[13,15],[14,16],[17,19],[18,21]],
+  5: [[2,5],[3,4],[7,11],[9,10],[12,15],[13,14],[17,21],[19,20]],
+};
+
+// Stationary atoms (lying on the σd plane) for status text
+var ferroceneSdStationary = {
+  1: 'Fe, C5, C9, H15, H19',
+  2: 'Fe, C3, C7, H13, H17',
+  3: 'Fe, C4, C11, H14, H21',
+  4: 'Fe, C2, C10, H12, H20',
+  5: 'Fe, C6, C8, H16, H18',
+};
+
+function playFerroceneSigmaD(index) {
+  if (currentFile !== 'ferrocene.xyz' || isAnimating) return;
+  isAnimating = true;
+  ferroceneS10IntermediateAtoms = null;
+
+  const btnId = `btnFerSd${index}`;
+  setFerroceneS10Buttons(true, btnId);
+  const btn = document.getElementById(btnId);
+  btn.textContent = `σd${index} 动画播放中...`;
+
+  const opStatus = document.getElementById('op-status');
+  opStatus.textContent = `二茂铁 σd${index}：镜面反射，正在播放...`;
+  opStatus.classList.add('loading');
+
+  // Load staggered model, preserve view
+  Jmol.script(myJmol, 'save orientation sdView;');
+  Jmol.script(myJmol, ferroceneStaggeredBaseModel + 'restore orientation sdView;');
+
+  const swaps  = ferroceneSdSwaps[index];
+  const aCoords = ferroceneStaggeredAtoms;
+  const steps  = 20;
+  const delay  = 0.025;
+
+  setTimeout(() => {
+    let script = 'set echo off; delay 0.15;';
+
+    for (let step = 0; step < steps; step++) {
+      swaps.forEach(([idA, idB]) => {
+        const A = aCoords[idA];
+        const B = aCoords[idB];
+        const dxA = ((B[0] - A[0]) / steps).toFixed(5);
+        const dyA = ((B[1] - A[1]) / steps).toFixed(5);
+        const dzA = ((B[2] - A[2]) / steps).toFixed(5);
+        const dxB = ((A[0] - B[0]) / steps).toFixed(5);
+        const dyB = ((A[1] - B[1]) / steps).toFixed(5);
+        const dzB = ((A[2] - B[2]) / steps).toFixed(5);
+        script += `select atomno=${idA}; translateSelected {${dxA} ${dyA} ${dzA}};`;
+        script += `select atomno=${idB}; translateSelected {${dxB} ${dyB} ${dzB}};`;
+      });
+      script += `delay ${delay};`;
+    }
+
+    script += `delay 0.35;`;
+    script += `background echo "σd${index} 完成：两半互换后构型完全复原（固定原子：${ferroceneSdStationary[index]}）";`;
+    script += `delay 1.0; background echo OFF;`;
+    Jmol.script(myJmol, script);
+
+    const totalTime = (steps * delay + 1.5) * 1000;
+    setTimeout(() => {
+      isAnimating = false;
+      setFerroceneS10Buttons(false, null);
+      btn.textContent = `σd${['₁','₂','₃','₄','₅'][index-1]}`;
+      opStatus.classList.remove('loading');
+      opStatus.textContent = `σd${index} 反射完成（固定：${ferroceneSdStationary[index]}）`;
+      setTimeout(() => {
+        if (!isAnimating) opStatus.textContent = '可用操作: C₅, C₂';
+      }, 2500);
+    }, totalTime);
+  }, 450);
+}
+
+// ================================================================
+// 苯（C₆H₆）D₆h 对称操作
+// 坐标（mol 文件原子顺序，1-indexed）：
+//   C1(1.2078,-0.6973,0) C2(1.2078,0.6973,0) C3(0,1.3946,0)
+//   H4(2.1368,-1.2337,0) H5(2.1368,1.2337,0) H6(0,2.4674,0)
+//   C7(-1.2078,0.6973,0) C8(-1.2078,-0.6973,0) C9(0,-1.3946,0)
+//   H10(-2.1368,1.2337,0) H11(-2.1368,-1.2337,0) H12(0,-2.4674,0)
+// ================================================================
+
+const benzeneBaseModel = `load data "benz xyz"
+12
+C6H6 benzene
+C   1.2078  -0.6973   0.0000
+C   1.2078   0.6973   0.0000
+C   0.0000   1.3946   0.0000
+H   2.1368  -1.2337   0.0000
+H   2.1368   1.2337   0.0000
+H   0.0000   2.4674   0.0000
+C  -1.2078   0.6973   0.0000
+C  -1.2078  -0.6973   0.0000
+C   0.0000  -1.3946   0.0000
+H  -2.1368   1.2337   0.0000
+H  -2.1368  -1.2337   0.0000
+H   0.0000  -2.4674   0.0000
+end "benz xyz"
+
+set antialiasDisplay;
+set zoomLarge false;
+spacefill 23%;
+wireframe 0.15;
+color carbon gray;
+color hydrogen white;
+center;
+zoom 120;
+`;
+
+var benzeneAtoms = {
+  1:  [ 1.2078, -0.6973, 0.0],  // C
+  2:  [ 1.2078,  0.6973, 0.0],  // C
+  3:  [ 0.0000,  1.3946, 0.0],  // C
+  4:  [ 2.1368, -1.2337, 0.0],  // H
+  5:  [ 2.1368,  1.2337, 0.0],  // H
+  6:  [ 0.0000,  2.4674, 0.0],  // H
+  7:  [-1.2078,  0.6973, 0.0],  // C
+  8:  [-1.2078, -0.6973, 0.0],  // C
+  9:  [ 0.0000, -1.3946, 0.0],  // C
+  10: [-2.1368,  1.2337, 0.0],  // H
+  11: [-2.1368, -1.2337, 0.0],  // H
+  12: [ 0.0000, -2.4674, 0.0],  // H
+};
+
+// σv swap pairs (atoms on plane stay put; adjacent CH groups swap)
+// σv1 plane at -30° → on-plane: C1,H4,C7,H10; swap: [C2↔C9,C3↔C8,H5↔H12,H6↔H11]
+// σv2 plane at  30° → on-plane: C2,H5,C8,H11; swap: [C1↔C3,H4↔H6,C7↔C9,H10↔H12]
+// σv3 plane at  90° → on-plane: C3,H6,C9,H12; swap: [C1↔C8,C2↔C7,H4↔H11,H5↔H10]
+var benzSvSwaps = {
+  1: [[2,9],[3,8],[5,12],[6,11]],
+  2: [[1,3],[4,6],[7,9],[10,12]],
+  3: [[1,8],[2,7],[4,11],[5,10]],
+};
+var benzSvOnPlane = {
+  1: [1,4,7,10],
+  2: [2,5,8,11],
+  3: [3,6,9,12],
+};
+var benzSvAxisDesc = {
+  1: 'C₁–C₇（含 H₄·H₁₀）',
+  2: 'C₂–C₈（含 H₅·H₁₁）',
+  3: 'C₃–C₉（含 H₆·H₁₂）',
+};
+
+// σd swap pairs (NO atoms on plane — all 12 atoms swap pairwise)
+// σd1 plane at  0°: [[C1,C2],[C3,C9],[H4,H5],[H6,H12],[C7,C8],[H10,H11]]
+// σd2 plane at 60°: [[C1,C7],[C2,C3],[H4,H10],[H5,H6],[C8,C9],[H11,H12]]
+// σd3 plane at 120°: [[C1,C9],[C2,C8],[C3,C7],[H4,H12],[H5,H11],[H6,H10]]
+var benzSdSwaps = {
+  1: [[1,2],[3,9],[4,5],[6,12],[7,8],[10,11]],
+  2: [[1,7],[2,3],[4,10],[5,6],[8,9],[11,12]],
+  3: [[1,9],[2,8],[3,7],[4,12],[5,11],[6,10]],
+};
+var benzSdPhiDeg = { 1: 0, 2: 60, 3: 120 };
+var benzSdBondDesc = {
+  1: 'C₁C₂ / C₇C₈',
+  2: 'C₂C₃ / C₈C₉',
+  3: 'C₃C₇ / C₉C₁',
+};
+
+// Inversion: every atom → opposite [C1↔C7, C2↔C8, C3↔C9, H4↔H10, H5↔H11, H6↔H12]
+var benzInvSwaps = [[1,7],[2,8],[3,9],[4,10],[5,11],[6,12]];
+
+// Helper: disable / enable all benzene buttons
+function setBenzButtons(disabled, activeId) {
+  ['btnBenzSigmaH','btnBenzSv1','btnBenzSv2','btnBenzSv3',
+   'btnBenzSd1','btnBenzSd2','btnBenzSd3','btnBenzInv'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.disabled = disabled;
+    btn.classList.toggle('active', !!(activeId && id === activeId));
+  });
+}
+
+// Helper: build swap translateSelected animation script (steps steps)
+function buildSwapScript(swaps, fromAtoms, steps, delay) {
+  let s = '';
+  for (let step = 0; step < steps; step++) {
+    swaps.forEach(([a, b]) => {
+      const A = fromAtoms[a], B = fromAtoms[b];
+      const dxA = ((B[0]-A[0])/steps).toFixed(5);
+      const dyA = ((B[1]-A[1])/steps).toFixed(5);
+      const dzA = ((B[2]-A[2])/steps).toFixed(5);
+      const dxB = ((A[0]-B[0])/steps).toFixed(5);
+      const dyB = ((A[1]-B[1])/steps).toFixed(5);
+      const dzB = ((A[2]-B[2])/steps).toFixed(5);
+      s += `select atomno=${a}; translateSelected {${dxA} ${dyA} ${dzA}};`;
+      s += `select atomno=${b}; translateSelected {${dxB} ${dyB} ${dzB}};`;
+    });
+    s += `delay ${delay};`;
+  }
+  return s;
+}
+
+// ── σₕ ──────────────────────────────────────────────────────────
+function playBenzSigmaH() {
+  if (currentFile !== 'C6H6.mol' || isAnimating) return;
+  isAnimating = true;
+  setBenzButtons(true, 'btnBenzSigmaH');
+  const btn = document.getElementById('btnBenzSigmaH');
+  btn.textContent = '执行恒等操作...';
+  const opStatus = document.getElementById('op-status');
+  opStatus.classList.remove('loading');
+  opStatus.textContent = 'σₕ：分子平面，所有原子均在其上 → 反射后完全不变';
+
+  Jmol.script(myJmol, 'save orientation benzView;');
+  Jmol.script(myJmol, benzeneBaseModel + 'restore orientation benzView;');
+
+  const html = `
+    <div class="identity-dialog-title">σₕ 反射：恒等操作</div>
+    <div class="identity-dialog-body">
+      <p>苯分子的 <strong>σₕ</strong> 是分子平面（xy 平面），所有 6 个 C 原子和 6 个 H 原子全部位于该平面内，z 坐标均为 0。</p>
+      <p>在该平面反射下，<strong>每个原子都映射回自身</strong>，分子外观与结构完全不变。这是 D₆ʰ 点群中的水平镜面，其效果等同于恒等操作 E。</p>
+      <p style="margin-top:8px;color:#6b7280;">点击"确认"关闭本提示后，可以继续进行其它操作。</p>
+    </div>
+  `;
+  showIdentityMessage(html);
+  setTimeout(() => {
+    setBenzButtons(false, null);
+    btn.textContent = 'σₕ 反射（不改变）';
+  }, 300);
+}
+
+// ── σᵥ ──────────────────────────────────────────────────────────
+function playBenzSigmaV(index) {
+  if (currentFile !== 'C6H6.mol' || isAnimating) return;
+  isAnimating = true;
+  const btnId = `btnBenzSv${index}`;
+  setBenzButtons(true, btnId);
+  const btn = document.getElementById(btnId);
+  btn.textContent = `σᵥ${['₁','₂','₃'][index-1]} 动画中...`;
+  const opStatus = document.getElementById('op-status');
+  opStatus.textContent = `σᵥ${index}（过 ${benzSvAxisDesc[index]}）镜面反射...`;
+  opStatus.classList.add('loading');
+
+  Jmol.script(myJmol, 'save orientation benzView;');
+  Jmol.script(myJmol, benzeneBaseModel + 'restore orientation benzView;');
+
+  const swaps = benzSvSwaps[index];
+  const onPlane = benzSvOnPlane[index];
+  const steps = 22, delay = 0.025;
+
+  setTimeout(() => {
+    let script = 'set echo off; delay 0.15;';
+    script += buildSwapScript(swaps, benzeneAtoms, steps, delay);
+
+    // Label on-plane atoms briefly
+    const onStr = onPlane.map(i => `atomno=${i}`).join(' or ');
+    script += `delay 0.3;`;
+    script += `background echo "σᵥ${index} 完成（镜面上固定：${onPlane.map(i=>'#'+i).join('·')}）";`;
+    script += `delay 1.0; background echo OFF;`;
+    Jmol.script(myJmol, script);
+
+    setTimeout(() => {
+      isAnimating = false;
+      setBenzButtons(false, null);
+      btn.textContent = `σᵥ${['₁','₂','₃'][index-1]}（过 C${[1,2,3][index-1]}·C${[7,8,9][index-1]} 轴）`;
+      opStatus.classList.remove('loading');
+      opStatus.textContent = `σᵥ${index} 反射完成（固定原子：${onPlane.join(', ')}）`;
+      setTimeout(() => { if (!isAnimating) opStatus.textContent = '可用操作: C₆, C₃, C₂'; }, 2000);
+    }, (steps * delay + 1.4) * 1000);
+  }, 400);
+}
+
+// ── σd ──────────────────────────────────────────────────────────
+function playBenzSigmaD(index) {
+  if (currentFile !== 'C6H6.mol' || isAnimating) return;
+  isAnimating = true;
+  const btnId = `btnBenzSd${index}`;
+  setBenzButtons(true, btnId);
+  const btn = document.getElementById(btnId);
+  btn.textContent = `σd${['₁','₂','₃'][index-1]} 动画中...`;
+  const opStatus = document.getElementById('op-status');
+  opStatus.textContent = `σd${index}（平分 ${benzSdBondDesc[index]}）镜面反射...`;
+  opStatus.classList.add('loading');
+
+  const phiDeg = benzSdPhiDeg[index];
+  const phiRad = phiDeg * Math.PI / 180;
+  const h = 3.2;  // half-size of drawn plane rectangle
+  const cx = Math.cos(phiRad) * h, cy = Math.sin(phiRad) * h;
+
+  Jmol.script(myJmol, 'save orientation benzView;');
+  Jmol.script(myJmol, benzeneBaseModel + 'restore orientation benzView;');
+
+  const swaps = benzSdSwaps[index];
+  const steps = 22, delay = 0.025;
+
+  setTimeout(() => {
+    // Draw semi-transparent σd plane first
+    let script = 'set echo off; delay 0.2;';
+    script += `draw sdplane${index} MESH {${cx.toFixed(3)} ${cy.toFixed(3)} ${h.toFixed(2)}} `;
+    script += `{${cx.toFixed(3)} ${cy.toFixed(3)} ${(-h).toFixed(2)}} `;
+    script += `{${(-cx).toFixed(3)} ${(-cy).toFixed(3)} ${(-h).toFixed(2)}} `;
+    script += `{${(-cx).toFixed(3)} ${(-cy).toFixed(3)} ${h.toFixed(2)}} `;
+    script += `color translucent 0.55 [30,120,220]; delay 0.4;`;
+
+    // Animate all 12 atoms swapping
+    script += buildSwapScript(swaps, benzeneAtoms, steps, delay);
+
+    script += `delay 0.35;`;
+    script += `background echo "σd${index} 完成：全部原子两两互换，无原子在平面上";`;
+    script += `delay 0.9; background echo OFF; draw sdplane${index} off;`;
+    Jmol.script(myJmol, script);
+
+    setTimeout(() => {
+      isAnimating = false;
+      setBenzButtons(false, null);
+      btn.textContent = `σd${['₁','₂','₃'][index-1]}（平分 ${benzSdBondDesc[index]}）`;
+      opStatus.classList.remove('loading');
+      opStatus.textContent = `σd${index} 反射完成`;
+      setTimeout(() => { if (!isAnimating) opStatus.textContent = '可用操作: C₆, C₃, C₂'; }, 2000);
+    }, (steps * delay + 1.9) * 1000);
+  }, 400);
+}
+
+// ── 反演 i ───────────────────────────────────────────────────────
+function playBenzInversion() {
+  if (currentFile !== 'C6H6.mol' || isAnimating) return;
+  isAnimating = true;
+  setBenzButtons(true, 'btnBenzInv');
+  const btn = document.getElementById('btnBenzInv');
+  btn.textContent = '反演动画中...';
+  const opStatus = document.getElementById('op-status');
+  opStatus.textContent = '苯反演操作 i：所有原子向中心聚拢后到达对称位置...';
+  opStatus.classList.add('loading');
+
+  Jmol.script(myJmol, 'save orientation benzView;');
+  Jmol.script(myJmol, benzeneBaseModel + 'restore orientation benzView;');
+
+  const swaps = benzInvSwaps;
+  const steps = 22, delay = 0.025;
+
+  setTimeout(() => {
+    let script = 'set echo off; delay 0.2;';
+    script += buildSwapScript(swaps, benzeneAtoms, steps, delay);
+    script += `delay 0.35;`;
+    script += `background echo "反演 i 完成：6对原子经中心互换（C1↔C7，C2↔C8，C3↔C9，H4↔H10，H5↔H11，H6↔H12）";`;
+    script += `delay 1.0; background echo OFF;`;
+    Jmol.script(myJmol, script);
+
+    setTimeout(() => {
+      isAnimating = false;
+      setBenzButtons(false, null);
+      btn.textContent = '反演操作 i';
+      opStatus.classList.remove('loading');
+      opStatus.textContent = '苯反演操作 i 完成';
+      setTimeout(() => { if (!isAnimating) opStatus.textContent = '可用操作: C₆, C₃, C₂'; }, 2000);
+    }, (steps * delay + 1.4) * 1000);
+  }, 400);
+}
+
+function resetView() {
+  if (isAnimating || !currentFile) return;
+  s6IntermediateAtoms = null;
+  ferroceneS10IntermediateAtoms = null;
+  if (currentFile === 'CO2.mol') {
+    co2C2primeClickCount = 0;
+    const btn = document.getElementById('btnCo2C2prime');
+    if (btn) btn.textContent = 'C₂′(∞) 旋转';
+  }
+  resetAndLoadMol(currentFile, currentDisplayName);
+}
+
+window.onload = function() {
+  initMoleculeButtons();
+  setTimeout(() => {
+    selectMol('water.xyz', [2], 'H₂O');
+  }, 300);
+};
+
+window.addEventListener('resize', function() {
+  Jmol.script(myJmol, 'refresh');
+});
 </script>
 
 </body>
